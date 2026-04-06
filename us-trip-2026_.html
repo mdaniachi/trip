@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Trip — Mai 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0a0a0b;
+  --surface: #141416;
+  --surface2: #1c1c1f;
+  --surface3: #242428;
+  --border: #2a2a2f;
+  --text: #e8e6e3;
+  --text2: #9a9590;
+  --accent: #e85d26;
+  --accent2: #ff7a45;
+  --green: #34d399;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --pink: #f472b6;
+}
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.app { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+/* Header */
+.header {
+  padding: 32px 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.header .sub {
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 300;
+}
+.header .sub span { color: var(--accent); font-weight: 500; }
+
+/* Trip Overview Cards */
+.overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.ov-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.ov-card .ov-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text2); margin-bottom: 6px; }
+.ov-card .ov-val { font-family: 'DM Serif Display', serif; font-size: 20px; }
+.ov-card .ov-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab {
+  flex: 1;
+  min-width: fit-content;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Sections */
+.section { display: none; }
+.section.active { display: block; }
+
+/* Checklist */
+.checklist-group { margin-bottom: 20px; }
+.checklist-group h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.check-item:hover { border-color: var(--accent); }
+.check-item.done { opacity: 0.5; }
+.check-item.done .check-label { text-decoration: line-through; }
+.check-box {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .2s;
+  font-size: 12px;
+}
+.check-item.done .check-box {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+.check-label { font-size: 13px; flex: 1; }
+.check-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.tag-done { background: rgba(52,211,153,.15); color: var(--green); }
+.tag-pending { background: rgba(251,191,36,.15); color: var(--yellow); }
+.tag-urgent { background: rgba(248,113,113,.15); color: var(--red); }
+
+/* Progress bar */
+.progress-bar {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.progress-bar .pb-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.pb-label { font-size: 12px; color: var(--text2); }
+.pb-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--green); }
+.pb-track { background: var(--surface3); height: 6px; border-radius: 3px; overflow: hidden; }
+.pb-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .5s ease; }
+
+/* Day cards */
+.day-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all .2s;
+}
+.day-card:hover { border-color: var(--surface3); }
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.day-date {
+  background: var(--surface3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  text-align: center;
+  min-width: 50px;
+}
+.day-date .dd-day { font-family: 'DM Serif Display', serif; font-size: 18px; line-height: 1; }
+.day-date .dd-month { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); }
+.day-info { flex: 1; }
+.day-info .day-title { font-size: 14px; font-weight: 600; }
+.day-info .day-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.day-phase {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.phase-orlando { background: rgba(96,165,250,.15); color: var(--blue); }
+.phase-miami { background: rgba(244,114,182,.15); color: var(--pink); }
+.phase-stl { background: rgba(167,139,250,.15); color: var(--purple); }
+.phase-volta { background: rgba(251,191,36,.15); color: var(--yellow); }
+
+.day-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.day-card.open .day-body { display: block; padding-top: 12px; }
+
+.day-activity {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+}
+.day-activity + .day-activity { border-top: 1px solid rgba(255,255,255,.04); }
+.da-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent2);
+  min-width: 50px;
+  padding-top: 2px;
+}
+.da-content { flex: 1; }
+.da-name { font-size: 13px; font-weight: 500; }
+.da-desc { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
+.da-tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.da-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.da-tag.park { background: rgba(96,165,250,.12); color: var(--blue); }
+.da-tag.car { background: rgba(232,93,38,.15); color: var(--accent2); }
+.da-tag.shop { background: rgba(244,114,182,.12); color: var(--pink); }
+.da-tag.rest { background: rgba(52,211,153,.12); color: var(--green); }
+.da-tag.food { background: rgba(251,191,36,.12); color: var(--yellow); }
+.da-tag.culture { background: rgba(167,139,250,.12); color: var(--purple); }
+.da-tag.free { background: rgba(52,211,153,.12); color: var(--green); }
+
+/* Tip boxes */
+.tip {
+  background: rgba(232,93,38,.06);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+.tip strong { color: var(--accent2); }
+
+.pregnant-tip {
+  background: rgba(244,114,182,.06);
+  border-left-color: var(--pink);
+}
+.pregnant-tip strong { color: var(--pink); }
+
+/* Tickets Section */
+.ticket-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.ticket-card h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+.ticket-card .tc-sub { font-size: 11px; color: var(--text2); margin-bottom: 12px; }
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.ticket-row + .ticket-row { border-top: 1px solid rgba(255,255,255,.04); }
+.ticket-row .tr-label { color: var(--text2); }
+.ticket-row .tr-val { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+.ticket-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+.ticket-total .tr-val { color: var(--accent); font-size: 15px; }
+.tc-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--accent2);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(232,93,38,.3);
+  padding-bottom: 1px;
+}
+.tc-link:hover { border-color: var(--accent2); }
+
+/* Flights */
+.flight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.flight-icon {
+  width: 36px; height: 36px;
+  background: var(--surface3);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.flight-info { flex: 1; }
+.flight-info .fi-route { font-size: 13px; font-weight: 600; }
+.flight-info .fi-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.flight-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent2);
+  text-align: right;
+}
+
+/* Section title */
+.sec-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+.sec-subtitle {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* Phase divider */
+.phase-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+}
+.phase-divider .pd-line { flex: 1; height: 1px; background: var(--border); }
+.phase-divider .pd-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+/* Expand icon */
+.expand-icon {
+  color: var(--text2);
+  font-size: 12px;
+  transition: transform .2s;
+}
+.day-card.open .expand-icon { transform: rotate(180deg); }
+
+/* countdown */
+.countdown {
+  text-align: center;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(232,93,38,.08), rgba(232,93,38,.02));
+  border: 1px solid rgba(232,93,38,.15);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.countdown .cd-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--accent);
+}
+.countdown .cd-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+@media (max-width: 480px) {
+  .overview { grid-template-columns: 1fr 1fr; }
+  .tabs { gap: 2px; padding: 3px; }
+  .tab { padding: 8px 10px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <h1>US Trip 2026</h1>
+  <div class="sub">Orlando → Miami → St. Louis &nbsp;·&nbsp; <span>09 Mai – 31 Mai</span></div>
+</div>
+
+<div class="countdown">
+  <div class="cd-num" id="countdown">—</div>
+  <div class="cd-label">dias até o embarque</div>
+</div>
+
+<div class="overview">
+  <div class="ov-card">
+    <div class="ov-label">Duração</div>
+    <div class="ov-val">22</div>
+    <div class="ov-detail">dias</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-label">Cidades</div>
+    <div class="ov-val">3</div>
+    <div class="ov-detail">ORL · MIA · STL</div>
+  </div>
+  <div class="ov-card">
+    <div class="ov-label">Viajantes</div>
+    <div class="ov-val">3</div>
+    <div class="ov-detail">família</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('checklist')">Checklist</button>
+  <button class="tab" onclick="showTab('roteiro')">Roteiro</button>
+  <button class="tab" onclick="showTab('tickets')">Tickets</button>
+  <button class="tab" onclick="showTab('voos')">Voos</button>
+</div>
+
+<!-- ==================== CHECKLIST ==================== -->
+<div class="section active" id="sec-checklist">
+
+<div class="progress-bar">
+  <div class="pb-top">
+    <span class="pb-label">Preparação da viagem</span>
+    <span class="pb-val" id="pb-pct">0%</span>
+  </div>
+  <div class="pb-track"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
+</div>
+
+<div class="checklist-group">
+  <h3>Documentos</h3>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c1"><div class="check-box"></div><div class="check-label">Passaportes válidos (todos)</div><span class="check-tag tag-urgent">verificar</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c2"><div class="check-box"></div><div class="check-label">Visto americano (todos)</div><span class="check-tag tag-urgent">verificar</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c3"><div class="check-box"></div><div class="check-label">Atestado médico para gestante voar</div><span class="check-tag tag-urgent">obrigatório</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c4"><div class="check-box"></div><div class="check-label">Seguro viagem (cobertura gestante)</div><span class="check-tag tag-pending">pendente</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c5"><div class="check-box"></div><div class="check-label">Carteira de vacinação (filha)</div><span class="check-tag tag-pending">pendente</span></div>
+</div>
+
+<div class="checklist-group">
+  <h3>Transporte</h3>
+  <div class="check-item done" onclick="toggleCheck(this)" data-key="c6"><div class="check-box">✓</div><div class="check-label">Passagens aéreas</div><span class="check-tag tag-done">ok</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c7"><div class="check-box"></div><div class="check-label">Aluguel de carro (Orlando + Miami)</div><span class="check-tag tag-pending">pendente</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c8"><div class="check-box"></div><div class="check-label">Car seat / cadeirinha (alugar ou levar)</div><span class="check-tag tag-pending">pendente</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c9"><div class="check-box"></div><div class="check-label">Voo Orlando → St. Louis (23/mai)</div><span class="check-tag tag-urgent">comprar</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c10"><div class="check-box"></div><div class="check-label">Voo St. Louis → Orlando (29 ou 30/mai)</div><span class="check-tag tag-urgent">comprar</span></div>
+</div>
+
+<div class="checklist-group">
+  <h3>Hospedagem</h3>
+  <div class="check-item done" onclick="toggleCheck(this)" data-key="c11"><div class="check-box">✓</div><div class="check-label">Hotel Orlando — Vacation Village at Parkway</div><span class="check-tag tag-done">ok</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c12"><div class="check-box"></div><div class="check-label">Hotel Miami (19–22 mai)</div><span class="check-tag tag-pending">pendente</span></div>
+  <div class="check-item done" onclick="toggleCheck(this)" data-key="c13"><div class="check-box">✓</div><div class="check-label">St. Louis — casa da amiga</div><span class="check-tag tag-done">ok</span></div>
+</div>
+
+<div class="checklist-group">
+  <h3>Tickets & Ingressos</h3>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c14"><div class="check-box"></div><div class="check-label">Disney World — 3 dias (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c15"><div class="check-box"></div><div class="check-label">Universal Orlando — 2 dias (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c16"><div class="check-box"></div><div class="check-label">SeaWorld — 1 dia (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
+</div>
+
+<div class="checklist-group">
+  <h3>Itens para levar</h3>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c17"><div class="check-box"></div><div class="check-label">Carrinho de bebê (dobrável p/ parques)</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c18"><div class="check-box"></div><div class="check-label">Chip de celular USA (T-Mobile / Airalo eSIM)</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c19"><div class="check-box"></div><div class="check-label">Cartão internacional (IOF reduzido)</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c20"><div class="check-box"></div><div class="check-label">Protetor solar / chapéu (calor de maio na FL)</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c21"><div class="check-box"></div><div class="check-label">Snacks e itens de conforto para a filha</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c22"><div class="check-box"></div><div class="check-label">Capa de chuva (maio = temporada de chuvas)</div></div>
+  <div class="check-item" onclick="toggleCheck(this)" data-key="c23"><div class="check-box"></div><div class="check-label">Remedios / kit farmácia</div></div>
+</div>
+
+</div>
+
+<!-- ==================== ROTEIRO ==================== -->
+<div class="section" id="sec-roteiro">
+
+<div class="sec-title">Roteiro dia a dia</div>
+<div class="sec-subtitle">Planejado para gestante de 6 meses e criança de 2 anos — com dias de descanso intercalados. Toque no dia para expandir.</div>
+
+<div class="tip pregnant-tip">
+  <strong>Gestante nos parques:</strong> Rider Switch disponível na Disney e Universal — Mauricio faz a atração enquanto esposa espera com a filha, e depois trocam sem enfrentar fila de novo.
+</div>
+
+<!-- ORLANDO -->
+<div class="phase-divider">
+  <div class="pd-line"></div>
+  <div class="pd-label phase-orlando">Orlando — 9 a 18 Mai</div>
+  <div class="pd-line"></div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">09</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Chegada + Disney Springs</div><div class="day-sub">Sexta · Dia de chegada</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">16:30</div><div class="da-content"><div class="da-name">Chegada no MCO</div><div class="da-desc">Pegar carro alugado, instalar car seat, check-in no Vacation Village.</div></div></div>
+    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Disney Springs</div><div class="da-desc">Jantar + passeio leve. Bom para acostumar com o fuso. Restaurantes: The Boathouse, Morimoto Asia. Lojas Disney para a filha.</div><div class="da-tags"><span class="da-tag rest">leve</span><span class="da-tag food">jantar</span><span class="da-tag free">gratuito</span></div></div></div>
+    <div class="tip">Disney Springs é gratuito — sem ticket. Estacionamento free. Ótimo para primeiro dia cansado de viagem.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">10</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Cars & Coffee + SeaWorld</div><div class="day-sub">Sábado · Carros pela manhã, parque à tarde</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Orlando Cars & Coffee</div><div class="da-desc">Great Southern Box Company Food Hall, Packing District. Exotics, classics, muscle cars. Evento gratuito, rola de 8h–11h. Café + breakfast no food hall.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag free">gratuito</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">SeaWorld Orlando</div><div class="da-desc">Parque mais leve — ótimo para gestante e criança. Shows de golfinhos, orcas, Sesame Street Land para a filha. Ritmo tranquilo.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="tip pregnant-tip"><strong>Filha (< 3 anos):</strong> Entrada gratuita no SeaWorld! Só compram 2 ingressos.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">11</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Magic Kingdom</div><div class="day-sub">Domingo · Dia mágico em família</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Magic Kingdom</div><div class="da-desc">Chegar cedo. Fantasyland é o coração pra criança: It's a Small World, Dumbo, Winnie the Pooh, carrousel. Fotos no castelo pela manhã (luz boa, menos gente).</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Pausa para almoço + descanso</div><div class="da-desc">Voltar ao hotel para soneca da filha. Maio é quente — o meio do dia é pesado.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
+    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Voltar ao Magic Kingdom</div><div class="da-desc">Tarde/noite mais fresca. Pirates of the Caribbean, Jungle Cruise, Haunted Mansion. Fogos de artifício à noite.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="tip"><strong>Rider Switch:</strong> Use para Space Mountain, Big Thunder, Tron. Um vai, o outro espera e entra sem fila depois.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">12</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Descanso — Winter Park</div><div class="day-sub">Segunda · Dia leve fora dos parques</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">09:30</div><div class="da-content"><div class="da-name">Winter Park — Scenic Boat Tour</div><div class="da-desc">Passeio de barco de 1h pelos lagos e mansões. US$18/adulto, crianças < 2 grátis. Leve e agradável.</div><div class="da-tags"><span class="da-tag rest">leve</span><span class="da-tag culture">passeio</span></div></div></div>
+    <div class="day-activity"><div class="da-time">11:00</div><div class="da-content"><div class="da-name">Park Avenue — Shopping + Almoço</div><div class="da-desc">Rua charmosa com boutiques, galerias, restaurantes. Bom para compras mais curadas. Almoço no Bosphorous ou Prato.</div><div class="da-tags"><span class="da-tag shop">compras</span><span class="da-tag food">almoço</span></div></div></div>
+    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Descanso / Piscina do hotel</div><div class="da-desc">Tarde livre para descansar. Vacation Village tem piscina boa.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">13</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Animal Kingdom — Bluey</div><div class="day-sub">Terça · Parque com foco na filha</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Animal Kingdom</div><div class="da-desc">Meet & greet da Bluey! Safári Kilimanjaro pela manhã (animais mais ativos). Tree of Life, It's Tough to be a Bug. Trilha de gorilas.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço no Flame Tree BBQ</div><div class="da-desc">Comida boa, vista linda. Bom custo-benefício dentro do parque.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
+    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Avatar Flight of Passage</div><div class="da-desc">Rider Switch — uma das melhores atrações da Disney. Pandora inteira vale a visita visual.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="tip">Animal Kingdom fecha mais cedo que os outros parques — planeje chegar cedo e aproveitar a manhã.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">14</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Universal Studios — Harry Potter</div><div class="day-sub">Quarta · Wizarding World</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Islands of Adventure — Hogsmeade</div><div class="da-desc">Hogwarts Express, Hagrid's Motorbike (Rider Switch!), Butterbeer. Diagon Alley fica no Universal Studios — se tiver Park-to-Park, conecta via trem.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Almoço em Hogsmeade</div><div class="da-desc">Three Broomsticks. Experiência imersiva dentro do tema.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
+    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Universal Studios Florida</div><div class="da-desc">Diagon Alley + Gringotts. Áreas do E.T., Transformers, Minions para a filha.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="tip"><strong>Dica:</strong> Park-to-Park é necessário para o Hogwarts Express entre os dois parques. Vale muito.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">15</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Shopping — Outlets</div><div class="day-sub">Quinta · Dia de compras</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">10:00</div><div class="da-content"><div class="da-name">Orlando Vineland Premium Outlets</div><div class="da-desc">160+ lojas: Burberry, Prada, Nike, Coach, Hugo Boss, Ferragamo. Fica a 10 min do Vacation Village. Desconto de 25-65% nos preços originais.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
+    <div class="day-activity"><div class="da-time">13:00</div><div class="da-content"><div class="da-name">Almoço — Ford's Garage ou Shake Shack</div><div class="da-desc">Opções dentro do outlet. Ford's Garage tem temática automotiva — você vai curtir.</div><div class="da-tags"><span class="da-tag food">almoço</span><span class="da-tag car">carros</span></div></div></div>
+    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Orlando International Premium Outlets</div><div class="da-desc">Segundo outlet na International Drive. Mais opções: Last Call Neiman Marcus, Saks OFF 5th. Brechós e second-hands na região da I-Drive também.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
+    <div class="tip"><strong>Moda:</strong> Cadastre no app Simon+ antes de ir — acumula pontos e pega deals exclusivos.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">16</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Cars & Coffee + Descanso</div><div class="day-sub">Sexta · Carros de manhã + dia leve</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Hagerty Cars & Coffee — Ace Cafe Orlando</div><div class="da-desc">Todo 3º sábado. Ace Cafe é referência — ambiente incrível, temática moto/car. Café da manhã no local. Vibe mais curada que o Cars & Coffee grande.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag free">gratuito</span></div></div></div>
+    <div class="day-activity"><div class="da-time">11:30</div><div class="da-content"><div class="da-name">Descanso / Piscina</div><div class="da-desc">Dia de pausa para a gestante. Piscina com a filha. Descanso antes do último bloco de parques.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
+    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Disney Springs (opcional)</div><div class="da-desc">Se sobrar energia — passeio leve para compras Disney restantes ou jantar.</div><div class="da-tags"><span class="da-tag shop">compras</span><span class="da-tag free">gratuito</span></div></div></div>
+    <div class="tip pregnant-tip"><strong>Dia pré-parque:</strong> Descanse bem — amanhã é Epic Universe, dia mais intenso.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">17</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Universal Epic Universe — Mario</div><div class="day-sub">Sábado · O parque novo</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Epic Universe — dia inteiro</div><div class="da-desc">Super Nintendo World (Mario Kart!), How to Train Your Dragon — Isle of Berk (ótimo para a filha), Dark Universe, Ministry of Magic. Parque novo, inaugurado em 2025.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço temático</div><div class="da-desc">Toadstool Cafe no Super Nintendo World — experiência gastronômica temática.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
+    <div class="day-activity"><div class="da-time">18:00</div><div class="da-content"><div class="da-name">Celestial Park</div><div class="da-desc">Área central do Epic Universe. Stardust Racers (coaster), Constellation Carousel para a filha.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="tip"><strong>Epic Universe:</strong> Parque separado dos outros Universal — fica no South Campus. Shuttle gratuito dos hotéis Universal ou de carro (15 min).</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">18</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Magic Kingdom (segunda ida) ou Flex</div><div class="day-sub">Domingo · Último dia Orlando</div></div>
+    <div class="day-phase phase-orlando">ORL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">Magic Kingdom — revisitar favoritos</div><div class="da-desc">Segunda chance para o que ficou de fora. Ou trocar por EPCOT se preferirem algo diferente — World Showcase é lindo pra passear.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
+    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Arrumar malas para Miami</div><div class="da-desc">Preparar para check-out do Vacation Village amanhã cedo.</div><div class="da-tags"><span class="da-tag rest">organizar</span></div></div></div>
+    <div class="tip">Alternativa: Se estiverem cansados de parque, façam um dia de compras finais + piscina + preparação Miami.</div>
+  </div>
+</div>
+
+<!-- MIAMI -->
+<div class="phase-divider">
+  <div class="pd-line"></div>
+  <div class="pd-label phase-miami">Miami — 19 a 22 Mai</div>
+  <div class="pd-line"></div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">19</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Orlando → Miami + Wynwood</div><div class="day-sub">Segunda · Road trip + arte urbana</div></div>
+    <div class="day-phase phase-miami">MIA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Check-out Orlando + Drive para Miami</div><div class="da-desc">~3h30 pela Florida Turnpike. Parada no meio para esticar as pernas (gestante precisa se movimentar).</div></div></div>
+    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Check-in hotel Miami + Almoço</div><div class="da-desc">Descanso rápido. Sugestão de região: Wynwood ou Brickell.</div></div></div>
+    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Wynwood Walls + Wynwood Arts District</div><div class="da-desc">Murais, galerias, street art. O bairro inteiro é um museu a céu aberto. Lojas de design, moda independente.</div><div class="da-tags"><span class="da-tag culture">arte</span><span class="da-tag shop">compras</span></div></div></div>
+    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Walt Grace Vintage</div><div class="da-desc">Café + Porsches vintage + guitarras raras. Tudo junto. Em Wynwood. Vai te enlouquecer.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag culture">cultura</span></div></div></div>
+    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Jantar em Wynwood</div><div class="da-desc">KYU (Asian BBQ), Alter (fine dining), ou Coyo Taco (casual mexicano).</div><div class="da-tags"><span class="da-tag food">jantar</span></div></div></div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">20</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Design District + Museus</div><div class="day-sub">Terça · Moda, arquitetura, arte</div></div>
+    <div class="day-phase phase-miami">MIA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">09:30</div><div class="da-content"><div class="da-name">Miami Design District</div><div class="da-desc">Meca da moda e do design. Louis Vuitton, Dior, Prada, Fendi — mas o melhor é a arquitetura das lojas. Cada fachada é uma obra de arte. Institute of Contemporary Art (ICA) fica ali — gratuito.</div><div class="da-tags"><span class="da-tag shop">moda</span><span class="da-tag culture">arquitetura</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço — Michael's Genuine</div><div class="da-desc">Farm-to-table no Design District. Ou MC Kitchen para algo mais casual.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
+    <div class="day-activity"><div class="da-time">14:30</div><div class="da-content"><div class="da-name">Pérez Art Museum Miami (PAMM)</div><div class="da-desc">Museu de arte contemporânea à beira da baía. Arquitetura do Herzog & de Meuron. Vista incrível. Coleção forte.</div><div class="da-tags"><span class="da-tag culture">museu</span></div></div></div>
+    <div class="day-activity"><div class="da-time">17:00</div><div class="da-content"><div class="da-name">Brickell — Passeio</div><div class="da-desc">Skyline de Miami, vibe urbana. Brickell City Centre para compras ou só flanar pela região.</div><div class="da-tags"><span class="da-tag culture">urbano</span></div></div></div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">21</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">South Beach + Coral Gables</div><div class="day-sub">Quarta · Praia, Art Deco, arquitetura</div></div>
+    <div class="day-phase phase-miami">MIA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">South Beach — Art Deco Walk</div><div class="da-desc">Ocean Drive e Collins Ave. Arquitetura Art Deco anos 30. Café no News Cafe ou Nikki Beach. Praia para a filha brincar na areia.</div><div class="da-tags"><span class="da-tag culture">arquitetura</span><span class="da-tag rest">praia</span></div></div></div>
+    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Lincoln Road Mall</div><div class="da-desc">Pedestrian mall a céu aberto. Compras, second-hand stores, galerias. Almoço casual.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
+    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Coral Gables — Biltmore Hotel + Venetian Pool</div><div class="da-desc">Arquitetura Mediterranean Revival. Biltmore é monumental. Venetian Pool — piscina pública mais bonita dos EUA (checar se filha pode entrar por idade).</div><div class="da-tags"><span class="da-tag culture">arquitetura</span></div></div></div>
+    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Jantar — Coconut Grove</div><div class="da-desc">Bairro boêmio, vibe relaxada. Restaurantes bons com outdoor seating.</div><div class="da-tags"><span class="da-tag food">jantar</span></div></div></div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">22</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Compras finais + Second-hand</div><div class="day-sub">Quinta · Último dia Miami</div></div>
+    <div class="day-phase phase-miami">MIA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">Sawgrass Mills Outlet (ou Aventura Mall)</div><div class="da-desc">Sawgrass Mills: maior outlet da Flórida, 350+ lojas. Fica em Sunrise (~40 min de Miami Beach). Alternativa: Aventura Mall — mais premium, mais perto.</div><div class="da-tags"><span class="da-tag shop">outlet</span></div></div></div>
+    <div class="day-activity"><div class="da-time">13:00</div><div class="da-content"><div class="da-name">Thrift Stores / Second-hand</div><div class="da-desc">Fly Boutique Vintage (Wynwood), C. Madeleine's (North Miami), Out of the Closet (Wilton Manors). Moda vintage curada.</div><div class="da-tags"><span class="da-tag shop">brechó</span></div></div></div>
+    <div class="day-activity"><div class="da-time">17:00</div><div class="da-content"><div class="da-name">Preparar para St. Louis</div><div class="da-desc">Arrumar malas, descansar para voo/drive amanhã.</div><div class="da-tags"><span class="da-tag rest">organizar</span></div></div></div>
+  </div>
+</div>
+
+<!-- ST LOUIS -->
+<div class="phase-divider">
+  <div class="pd-line"></div>
+  <div class="pd-label phase-stl">St. Louis — 23 a 29 Mai</div>
+  <div class="pd-line"></div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">23</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Miami → St. Louis</div><div class="day-sub">Sexta · Voo + chegada na casa da amiga</div></div>
+    <div class="day-phase phase-stl">STL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Voo para St. Louis</div><div class="da-desc">Definir voo e horários. Devolver carro alugado no aeroporto de Miami (ou Orlando, dependendo da logística).</div></div></div>
+    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Chegada + Instalação</div><div class="da-desc">Uma semana na casa da amiga. Ritmo mais tranquilo, sem parques.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
+    <div class="tip">St. Louis: Gateway Arch, City Museum (playground gigante), Forest Park (zoológico gratuito!), The Loop (bairro legal). Tudo com ritmo de descanso.</div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">24–29</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Semana em St. Louis</div><div class="day-sub">Sáb a Qui · Com a amiga</div></div>
+    <div class="day-phase phase-stl">STL</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Programação flexível com a amiga</div><div class="da-desc">Sugestões: Gateway Arch + Tram Ride, City Museum, St. Louis Zoo (gratuito!), Forest Park, The Hill (bairro italiano), Cars & Coffee STL (verificar data). Ritmo tranquilo — gestante de 6 meses precisa descansar nessa reta final da viagem.</div><div class="da-tags"><span class="da-tag culture">passeios</span><span class="da-tag rest">tranquilo</span></div></div></div>
+  </div>
+</div>
+
+<!-- VOLTA -->
+<div class="phase-divider">
+  <div class="pd-line"></div>
+  <div class="pd-label phase-volta">Volta — 30 e 31 Mai</div>
+  <div class="pd-line"></div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">30</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">St. Louis → Orlando → Brasil</div><div class="day-sub">Sábado · Dia de viagem</div></div>
+    <div class="day-phase phase-volta">VOLTA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">AM</div><div class="da-content"><div class="da-name">Voo STL → MCO</div><div class="da-desc">Chegar em Orlando a tempo para o voo G3 7625 das 12:55.</div></div></div>
+    <div class="day-activity"><div class="da-time">12:55</div><div class="da-content"><div class="da-name">Voo MCO → Fortaleza (FOR)</div><div class="da-desc">G3 7625 · Chegada 21:35. Conexão em Fortaleza.</div></div></div>
+  </div>
+</div>
+
+<div class="day-card" onclick="toggleDay(this)">
+  <div class="day-header">
+    <div class="day-date"><div class="dd-day">31</div><div class="dd-month">Mai</div></div>
+    <div class="day-info"><div class="day-title">Fortaleza → São Paulo</div><div class="day-sub">Domingo · Último trecho</div></div>
+    <div class="day-phase phase-volta">VOLTA</div>
+    <div class="expand-icon">▼</div>
+  </div>
+  <div class="day-body">
+    <div class="day-activity"><div class="da-time">03:20</div><div class="da-content"><div class="da-name">Voo FOR → GRU</div><div class="da-desc">G3 1559 · Chegada 06:55 em Guarulhos. Fim da viagem. Bem-vindos de volta.</div></div></div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== TICKETS ==================== -->
+<div class="section" id="sec-tickets">
+
+<div class="sec-title">Guia de compra de tickets</div>
+<div class="sec-subtitle">Estimativas baseadas em preços de abril 2026. Compre online sempre — é mais barato que no portão. Filha (< 3 anos) entra grátis em todos.</div>
+
+<div class="ticket-card">
+  <h3>🏰 Disney World</h3>
+  <div class="tc-sub">3 dias · Magic Kingdom (×2) + Animal Kingdom · 2 adultos</div>
+  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">3-Day Base Ticket</span></div>
+  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$420–480</span></div>
+  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
+  <div class="ticket-row"><span class="tr-label">Park Hopper (opcional)</span><span class="tr-val">+$198–264 total</span></div>
+  <div class="ticket-total"><span>Estimativa 2 adultos (base)</span><span class="tr-val">~$840–960</span></div>
+  <div class="tip" style="margin-top:12px">
+    <strong>Dica de economia:</strong> Multi-day fica muito mais barato por dia (~$140/dia vs $170+ avulso). Compre online com antecedência — preço trava e não sobe. Se quiser trocar MK repetido por EPCOT, mesmo ticket vale pra qualquer parque (exceto Park Hopper).
+  </div>
+  <a class="tc-link" href="https://disneyworld.disney.go.com/admission/tickets/" target="_blank">Comprar no site oficial da Disney →</a>
+</div>
+
+<div class="ticket-card">
+  <h3>🧙‍♂️ Universal Orlando</h3>
+  <div class="tc-sub">2 dias · Universal Studios + Epic Universe · 2 adultos</div>
+  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">3-Day Park-to-Park</span></div>
+  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$430–480</span></div>
+  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
+  <div class="ticket-total"><span>Estimativa 2 adultos</span><span class="tr-val">~$860–960</span></div>
+  <div class="tip" style="margin-top:12px">
+    <strong>Deal atual:</strong> Universal está oferecendo 7 dias por preço de 5 (~$65/dia) incluindo Epic Universe. Se forem ir mais dias de Universal, esse deal é insano. Park-to-Park é obrigatório para Hogwarts Express.
+  </div>
+  <a class="tc-link" href="https://www.universalorlando.com/web/en/us/tickets-packages/park-tickets" target="_blank">Comprar no site oficial da Universal →</a>
+</div>
+
+<div class="ticket-card">
+  <h3>🐬 SeaWorld Orlando</h3>
+  <div class="tc-sub">1 dia · 2 adultos</div>
+  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">Single-Day Online</span></div>
+  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$66–90</span></div>
+  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
+  <div class="ticket-row"><span class="tr-label">All-Day Dining (opcional)</span><span class="tr-val">+$30/pessoa</span></div>
+  <div class="ticket-total"><span>Estimativa 2 adultos (base)</span><span class="tr-val">~$132–180</span></div>
+  <div class="tip" style="margin-top:12px">
+    <strong>Flash Sale:</strong> SeaWorld tem tickets a partir de ~$66 online. All-Day Dining por +$30 vale a pena — come o dia todo. Compre no site oficial ou via Undercover Tourist.
+  </div>
+  <a class="tc-link" href="https://seaworld.com/orlando/tickets/" target="_blank">Comprar no site oficial do SeaWorld →</a>
+</div>
+
+<div class="ticket-card" style="border-color: rgba(232,93,38,.3);">
+  <h3>💰 Resumo Total Estimado — Tickets</h3>
+  <div class="tc-sub">Todos os parques · 2 adultos · filha grátis</div>
+  <div class="ticket-row"><span class="tr-label">Disney World (3 dias)</span><span class="tr-val">~$840–960</span></div>
+  <div class="ticket-row"><span class="tr-label">Universal (2-3 dias)</span><span class="tr-val">~$860–960</span></div>
+  <div class="ticket-row"><span class="tr-label">SeaWorld (1 dia)</span><span class="tr-val">~$132–180</span></div>
+  <div class="ticket-total"><span>Total estimado (tickets)</span><span class="tr-val">~$1,830–2,100</span></div>
+</div>
+
+<div class="tip">
+  <strong>Onde comprar com desconto:</strong> Undercover Tourist (parceiro autorizado, sem taxa), Groupon (SeaWorld especialmente), e diretamente nos sites oficiais. Evite revendedores não autorizados.
+</div>
+
+</div>
+
+<!-- ==================== VOOS ==================== -->
+<div class="section" id="sec-voos">
+
+<div class="sec-title">Voos confirmados</div>
+<div class="sec-subtitle">Todos pela GOL (G3). Conexão em Brasília na ida e Fortaleza na volta.</div>
+
+<div class="flight-card">
+  <div class="flight-icon">✈️</div>
+  <div class="flight-info">
+    <div class="fi-route">São Paulo (CGH) → Brasília (BSB)</div>
+    <div class="fi-detail">G3 1400 · 06:00 → 07:35</div>
+  </div>
+  <div class="flight-date">09/MAI</div>
+</div>
+
+<div class="flight-card">
+  <div class="flight-icon">✈️</div>
+  <div class="flight-info">
+    <div class="fi-route">Brasília (BSB) → Orlando (MCO)</div>
+    <div class="fi-detail">G3 7634 · 09:15 → 16:30</div>
+  </div>
+  <div class="flight-date">09/MAI</div>
+</div>
+
+<div style="height:20px"></div>
+
+<div class="flight-card" style="opacity:.5; border-style:dashed;">
+  <div class="flight-icon">❓</div>
+  <div class="flight-info">
+    <div class="fi-route">Orlando/Miami → St. Louis (STL)</div>
+    <div class="fi-detail">A definir · ~23/mai</div>
+  </div>
+  <div class="flight-date" style="color:var(--yellow)">PENDENTE</div>
+</div>
+
+<div class="flight-card" style="opacity:.5; border-style:dashed;">
+  <div class="flight-icon">❓</div>
+  <div class="flight-info">
+    <div class="fi-route">St. Louis (STL) → Orlando (MCO)</div>
+    <div class="fi-detail">A definir · ~29-30/mai</div>
+  </div>
+  <div class="flight-date" style="color:var(--yellow)">PENDENTE</div>
+</div>
+
+<div style="height:20px"></div>
+
+<div class="flight-card">
+  <div class="flight-icon">✈️</div>
+  <div class="flight-info">
+    <div class="fi-route">Orlando (MCO) → Fortaleza (FOR)</div>
+    <div class="fi-detail">G3 7625 · 12:55 → 21:35</div>
+  </div>
+  <div class="flight-date">30/MAI</div>
+</div>
+
+<div class="flight-card">
+  <div class="flight-icon">✈️</div>
+  <div class="flight-info">
+    <div class="fi-route">Fortaleza (FOR) → Guarulhos (GRU)</div>
+    <div class="fi-detail">G3 1559 · 03:20 → 06:55</div>
+  </div>
+  <div class="flight-date">31/MAI</div>
+</div>
+
+<div class="tip" style="margin-top:16px">
+  <strong>Atenção:</strong> Voo de volta sai de Orlando dia 30 às 12:55. Se ficarem em St. Louis até dia 29, precisam de voo STL→MCO chegando até ~10:00 do dia 30 para folga no aeroporto. Considere voltar dia 29 à noite e dormir perto do MCO.
+</div>
+
+<div class="tip pregnant-tip">
+  <strong>Gestante voando:</strong> GOL exige atestado médico para viagem aérea a partir de 28 semanas. Na época (6 meses = ~24-28 semanas), pode já ser necessário. Verifique com a companhia e com o obstetra.
+</div>
+
+</div>
+
+</div>
+
+<script>
+// Tab switching
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Day card toggle
+function toggleDay(card) {
+  card.classList.toggle('open');
+}
+
+// Checklist with localStorage
+function toggleCheck(item) {
+  item.classList.toggle('done');
+  const box = item.querySelector('.check-box');
+  box.textContent = item.classList.contains('done') ? '✓' : '';
+  
+  // Save state
+  const key = item.dataset.key;
+  if (key) {
+    const states = JSON.parse(localStorage.getItem('trip-checklist') || '{}');
+    states[key] = item.classList.contains('done');
+    localStorage.setItem('trip-checklist', JSON.stringify(states));
+  }
+  
+  updateProgress();
+}
+
+function loadChecklist() {
+  const states = JSON.parse(localStorage.getItem('trip-checklist') || '{}');
+  Object.keys(states).forEach(key => {
+    if (states[key]) {
+      const item = document.querySelector(`[data-key="${key}"]`);
+      if (item) {
+        item.classList.add('done');
+        item.querySelector('.check-box').textContent = '✓';
+      }
+    }
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = document.querySelectorAll('.check-item').length;
+  const done = document.querySelectorAll('.check-item.done').length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('pb-pct').textContent = pct + '%';
+  document.getElementById('pb-fill').style.width = pct + '%';
+}
+
+// Countdown
+function updateCountdown() {
+  const trip = new Date('2026-05-09T06:00:00-03:00');
+  const now = new Date();
+  const diff = Math.ceil((trip - now) / (1000 * 60 * 60 * 24));
+  document.getElementById('countdown').textContent = diff > 0 ? diff : '🎉';
+  if (diff <= 0) {
+    document.querySelector('.countdown .cd-label').textContent = 'A viagem começou!';
+  }
+}
+
+// Init
+loadChecklist();
+updateCountdown();
+setInterval(updateCountdown, 3600000);
+</script>
+</body>
+</html>
