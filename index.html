@@ -2,325 +2,527 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>USA 2026 Pro</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="USA 2026">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA 2026 - Trip Planner</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        :root {
-            --ios-blue: #007AFF;
-            --ios-bg: #000000;
-            --ios-card: #1C1C1E;
-            --ios-text: #FFFFFF;
-            --ios-secondary-text: #8E8E93;
-            --ios-separator: #38383A;
-            --safe-area-top: env(safe-area-inset-top);
-            --safe-area-bottom: env(safe-area-inset-bottom);
-        }
-
         body, html {
-            margin: 0; padding: 0;
-            background-color: var(--ios-bg);
-            color: var(--ios-text);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            background-color: #0D0D0D;
+            color: #E8E4DF;
+            font-family: 'Outfit', sans-serif;
         }
-
-        /* Layout Estrutural */
-        .app-container { padding-bottom: calc(90px + var(--safe-area-bottom)); }
-        .content-padding { padding: 0 16px; }
-
-        /* Títulos Apple Style */
-        .large-title {
-            font-size: 34px;
-            font-weight: 700;
-            padding: calc(40px + var(--safe-area-top)) 16px 10px;
-            letter-spacing: -1px;
-        }
-
-        /* Cartões Inset Grouped */
-        .ios-card {
-            background: var(--ios-card);
-            border-radius: 12px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .ios-row {
-            padding: 12px 16px;
-            border-bottom: 0.5px solid var(--ios-separator);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .ios-row:last-child { border-bottom: none; }
-
-        /* Navegação Inferior */
-        .tab-bar {
-            position: fixed; bottom: 0; width: 100%;
-            height: calc(65px + var(--safe-area-bottom));
-            background: rgba(25, 25, 25, 0.85);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            display: flex; justify-content: space-around;
-            padding-top: 10px;
-            border-top: 0.5px solid var(--ios-separator);
-            z-index: 1000;
-        }
-
-        .tab-item {
-            background: none; border: none; color: var(--ios-secondary-text);
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 10px; font-weight: 500; cursor: pointer;
-        }
-        .tab-item.active { color: var(--ios-blue); }
-        .tab-icon { font-size: 22px; margin-bottom: 4px; }
-
-        /* Botão Apple */
-        .ios-button {
-            background: var(--ios-blue);
-            color: white; border: none;
-            padding: 14px; border-radius: 12px;
-            font-weight: 600; width: 100%; font-size: 16px;
-        }
-
-        /* Animação suave */
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        * { box-sizing: border-box; }
+        
+        /* Scrollbar customizada para ficar dark */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0D0D0D; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect } = React;
 
-// --- DADOS DO ROTEIRO COMPLETO (Sua base original) ---
-const ORIGINAL_ITINERARY = [
+// ==========================================
+// DADOS ESTÁTICOS
+// ==========================================
+const CHECKLIST_DATA = [
   {
-    phase: "Orlando · Fase 1", color: "#FF9500",
+    category: "Documentação",
+    items: [
+      { id: "passaportes", label: "Passaportes válidos (todos)", done: false },
+      { id: "visto", label: "Vistos americanos em dia", done: false },
+      { id: "seguro", label: "Seguro viagem (cobertura gestante)", done: false },
+      { id: "laudo_medico", label: "Laudo médico para viagem (esposa grávida)", done: false },
+      { id: "carteira_vacinacao", label: "Carteira de vacinação (filha)", done: false },
+      { id: "autorizacao", label: "Autorização de viagem (se necessário p/ menor)", done: false },
+    ],
+  },
+  {
+    category: "Transporte",
+    items: [
+      { id: "passagens", label: "Passagens aéreas compradas", done: true },
+      { id: "aluguel_carro", label: "Aluguel de carro reservado (Orlando + Miami)", done: false },
+      { id: "cadeirinha", label: "Cadeirinha de bebê no carro alugado", done: false },
+      { id: "voo_stl", label: "Voo Orlando → St. Louis (23/mai)", done: false },
+      { id: "voo_stl_volta", label: "Voo St. Louis → Orlando (30/mai)", done: false },
+      { id: "gps", label: "Chip de celular ou eSIM com dados", done: false },
+    ],
+  },
+  {
+    category: "Hospedagem",
+    items: [
+      { id: "hotel_orlando", label: "Vacation Village at Parkway (Orlando)", done: true },
+      { id: "hotel_miami", label: "Brickell Arch Residences (Palermo Home) — 21–24/mai", done: true },
+      { id: "hotel_stl", label: "Estadia em St. Louis (casa da amiga)", done: true },
+    ],
+  },
+  {
+    category: "Tickets & Ingressos",
+    items: [
+      { id: "disney_tickets", label: "Ingressos Disney (3 dias — MK×2 + AK×1)", done: false },
+      { id: "universal_tickets", label: "Ingressos Universal (2+ dias c/ Epic Universe)", done: false },
+      { id: "seaworld_tickets", label: "Ingresso SeaWorld (1 dia)", done: false },
+      { id: "winter_park_boat", label: "Scenic Boat Tour Winter Park (não precisa reservar)", done: false },
+    ],
+  },
+];
+
+const ITINERARY = [ /* Roteiro mantido igual ao original */
+  {
+    phase: "Orlando · Fase 1", phaseColor: "#FF6B35",
     days: [
-      { date: "09/mai (sáb)", title: "Chegada em Orlando", icon: "✈️", type: "travel", items: ["Chegada MCO 17:30", "Pegar Wrangler (Turo)", "Supermercado Walmart"], tip: "Primeira noite perto do aeroporto." },
-      { date: "10/mai (dom)", title: "SeaWorld Orlando", icon: "🐬", type: "park", items: ["Check-in Vacation Village", "Shows: Orca e Dolphin", "Sesame Street Land"], tip: "Olivia entra grátis!" },
-      { date: "11/mai (seg)", title: "Magic Kingdom", icon: "🏰", type: "park", items: ["Foco: Fantasyland", "Almoço Columbia Harbour", "Show de Fogos"], tip: "Levem o carrinho reclinável." },
-      { date: "12/mai (ter)", title: "Descanso + Outlets", icon: "🛍️", type: "rest", items: ["Piscina Resort", "Vineland Premium Outlets"], tip: "Aproveite os cupons no app Simon." },
-      { date: "13/mai (qua)", title: "Animal Kingdom", icon: "🦁", type: "park", items: ["Safári bem cedo", "Na'vi River Journey", "Festival of the Lion King"] },
-      { date: "14/mai (qui)", title: "EPCOT", icon: "🌍", type: "park", items: ["Guardians of the Galaxy", "World Showcase", "Show Luminous"] },
-      { date: "15/mai (sex)", title: "Universal Studios", icon: "⚡", type: "park", items: ["Diagon Alley", "Hogwarts Express", "Hogsmeade"] },
-      { date: "16/mai (sáb)", title: "Cars & Coffee", icon: "🏎️", type: "rest", items: ["8:00 House Blend Cafe", "Disney Springs tarde"] },
-      { date: "18/mai (seg)", title: "Universal Epic Universe", icon: "🍄", type: "park", items: ["Super Nintendo World", "Isle of Berk", "Dark Universe"] },
-      { date: "19/mai (ter)", title: "Hollywood Studios", icon: "🎬", type: "park", items: ["Star Wars: Galaxy's Edge", "Toy Story Land"] }
+      { date: "09/mai (sáb)", title: "Chegada", icon: "✈️", type: "travel", items: ["Chegada MCO 17:30", "Pegar carro alugado (Wrangler)", "Check-in hotel perto do MCO (1 noite)", "Supermercado — compras básicas", "Descanso e adaptação ao fuso"], tip: "Primeira noite em hotel perto do aeroporto. Aproveitem para comprar água e snacks." },
+      { date: "10/mai (dom)", title: "SeaWorld", icon: "🐬", type: "park", items: ["Check-out hotel MCO", "Check-in Vacation Village", "Tarde no SeaWorld Orlando", "Shows: Orca, Sea Lion, Dolphin", "Sesame Street Land"], places: [{ name: "Vacation Village", address: "2949 Arabian Nights Blvd" }, { name: "SeaWorld", address: "7007 Sea World Dr" }] },
+      { date: "11/mai (seg)", title: "Magic Kingdom", icon: "🏰", type: "park", items: ["Chegar cedo no MK", "Foco: Fantasyland", "Almoço leve", "Show de fogos à noite"] },
+      { date: "12/mai (ter)", title: "Descanso + Outlets", icon: "🛍️", type: "rest", items: ["Piscina do resort", "Tarde → Orlando Vineland Premium Outlets", "Jantar no Disney Springs"] },
+      { date: "13/mai (qua)", title: "Animal Kingdom", icon: "🦁", type: "park", items: ["Kilimanjaro Safaris cedo", "Na'vi River Journey", "Festival of the Lion King"] },
+      { date: "14/mai (qui)", title: "EPCOT", icon: "🌍", type: "park", items: ["World Celebration + World Discovery", "Almoço no World Showcase", "Show noturno: Luminous"] },
+      { date: "15/mai (sex)", title: "Universal Studios", icon: "⚡", type: "park", items: ["Wizarding World of Harry Potter", "Hogwarts Express", "Islands of Adventure"] },
+      { date: "16/mai (sáb)", title: "Cars & Coffee", icon: "🏎️", type: "rest", items: ["8:00 → Cars & Coffee Orlando", "Piscina e descanso", "Disney Springs"] },
+      { date: "17/mai (dom)", title: "Dia livre", icon: "🎲", type: "rest", items: ["Opções: Kennedy Space Center, Praia, Gatorland ou descanso absoluto"] },
+      { date: "18/mai (seg)", title: "Epic Universe", icon: "🍄", type: "park", items: ["Super Nintendo World", "How to Train Your Dragon", "Dark Universe"] },
+      { date: "19/mai (ter)", title: "Hollywood Studios", icon: "🎬", type: "park", items: ["Star Wars: Galaxy's Edge", "Toy Story Land", "Mickey & Minnie's Runaway Railway"] },
+      { date: "20/mai (qua)", title: "Compras finais", icon: "🛍️", type: "shopping", items: ["Mall at Millenia (Apple Store trade-in)", "Arrumar malas para Miami"] }
     ]
   },
   {
-    phase: "Miami", color: "#30D158",
+    phase: "Miami", phaseColor: "#00BFA6",
     days: [
-      { date: "21/mai (qui)", title: "Voo p/ Miami + Wynwood", icon: "🏎️", type: "travel", items: ["Voo MCO-MIA Spirit", "Pegar Porsche Turo", "Wynwood Walls"] },
-      { date: "22/mai (sex)", title: "Art Deco + South Beach", icon: "🏖️", type: "culture", items: ["Walking Tour South Beach", "Lincoln Road Mall"] }
+      { date: "21/mai (qui)", title: "Voo p/ Miami + Wynwood", icon: "✈️", type: "travel", items: ["Devolver Wrangler MCO", "Voo MCO → MIA (Spirit)", "Pegar Porsche no Turo", "Tarde → Wynwood Walls"] },
+      { date: "22/mai (sex)", title: "South Beach", icon: "🏖️", type: "culture", items: ["Art Deco Walking Tour", "Lincoln Road Mall", "South Pointe Park"] },
+      { date: "23/mai (sáb)", title: "Design District", icon: "👜", type: "culture", items: ["Fly Boutique (vintage)", "The RealReal", "Miami Design District", "17h-21h: Supercars desfilando"] },
+      { date: "24/mai (dom)", title: "A1A + Volta Orlando", icon: "🏎️", type: "travel", items: ["Porsche drive pela A1A", "Voo MIA → MCO", "Pegar Wrangler MCO"] }
+    ]
+  },
+  {
+    phase: "St. Louis", phaseColor: "#7C4DFF",
+    days: [
+      { date: "25/mai (seg)", title: "Voo p/ St. Louis", icon: "✈️", type: "travel", items: ["Voo direto MCO → STL", "Encontrar a amiga em StL"] },
+      { date: "26/mai (ter)", title: "Gateway Arch", icon: "🌆", type: "culture", items: ["Gateway Arch", "Forest Park", "Saint Louis Zoo"] },
+      { date: "27/mai (qua)", title: "City Museum", icon: "🎨", type: "rest", items: ["City Museum", "Thrift stores", "Jantar com amiga"] },
+      { date: "28/mai (qui)", title: "Voo p/ Orlando", icon: "✈️", type: "travel", items: ["Despedida", "Voo STL → MCO", "Check-in hotel perto aeroporto"] }
+    ]
+  },
+  {
+    phase: "Orlando · Fase 2", phaseColor: "#FF6B35",
+    days: [
+      { date: "29/mai (sex)", title: "Último dia", icon: "🎁", type: "rest", items: ["Descanso", "Arrumar malas", "Jantar de despedida"] },
+      { date: "30/mai (sáb)", title: "Volta para casa", icon: "🏠", type: "travel", items: ["Uber MCO", "Voo MCO → Fortaleza", "Conexões p/ Curitiba"] }
     ]
   }
 ];
 
-// --- LOGICA DE PERSISTÊNCIA ---
+const TICKETS = [
+  { park: "Disney World", emoji: "🏰", details: ["3 dias necessários: MK×2 + AK×1", "Filha: GRÁTIS"], recommendation: "Compre 3-day base ticket para 2 adultos. Sem Park Hopper.", estimatedCost: "$900–1.100", buyLink: "https://disneyworld.disney.go.com/tickets", buyTips: ["Compre direto no site oficial", "Considere o Lightning Lane (~$30/dia)"] },
+  { park: "Universal Orlando", emoji: "⚡", details: ["2 dias: Universal Studios + Epic", "Filha: PAGA (checar isenção 2a8m)", "Park-to-Park necessário"], recommendation: "2-Day Park-to-Park com Epic Universe.", estimatedCost: "$550–820", buyLink: "https://universalorlando.com/tickets", buyTips: ["Epic Universe esgota rápido", "Gate prices são mais caros"] },
+  { park: "SeaWorld", emoji: "🐬", details: ["1 dia é suficiente", "Filha: GRÁTIS", "All-Day Dining vale a pena"], recommendation: "Single-day ticket online + All-Day Dining.", estimatedCost: "$130–220", buyLink: "https://seaworld.com/orlando/tickets", buyTips: ["Compre online (20-45% off)", "Groupon costuma ter deals"] },
+  { park: "Winter Park Boat Tour", emoji: "🚤", details: ["Tour de 1h pelos lagos", "Não precisa reserva"], recommendation: "Compre na hora. Saídas a cada hora.", estimatedCost: "$40", buyLink: "https://scenicboattours.com", buyTips: ["Chegue 15min antes", "Aberto 10h–16h"] }
+];
+
+const FINANCE_SECTIONS = [
+  { title: "ALIMENTAÇÃO", icon: "🍔", color: "#FFB300", items: [{ label: "22 dias × $100/dia", value: 2200 }] },
+  { title: "ALUGUEL DE CARRO (14 dias)", icon: "🚙", color: "#FF6B35", items: [{ label: "Wrangler 12 dias (Turo)", value: 960, card: true }, { label: "Combustível", value: 220 }, { label: "Pedágios/parking", value: 60 }] },
+  { title: "PARQUES & TICKETS", icon: "🎟️", color: "#7C4DFF", items: [{ label: "Disney (3 dias, 2 ad)", value: 1000 }, { label: "Universal (2 dias c/ Epic)", value: 685 }, { label: "SeaWorld + dining", value: 175 }, { label: "Winter Park", value: 40 }] },
+  { title: "MIAMI (4 dias)", icon: "🌴", color: "#00BFA6", items: [{ label: "Brickell Arch (3 noites)", value: 950, card: true }, { label: "Voos MCO↔MIA", value: 300, card: true }, { label: "Porsche 3 dias", value: 780 }, { label: "Combustível", value: 80 }, { label: "Uber/Extras", value: 320 }] },
+  { title: "ST. LOUIS + FIM", icon: "🌆", color: "#E53935", items: [{ label: "Voos MCO↔STL", value: 900 }, { label: "Hotéis MCO (4 noites)", value: 560, card: true }, { label: "Atividades/Uber", value: 480 }] },
+  { title: "RESERVA / IMPREVISTOS", icon: "🛟", color: "#888", items: [{ label: "Margem (~10%)", value: 900 }] },
+  { title: "GASTOS PESSOAIS", icon: "👶", color: "#E91E63", items: [{ label: "Mauricio", value: 1000 }, { label: "Natalia", value: 1000 }, { label: "Olivia", value: 500 }, { label: "Neném", value: 500 }] },
+  { title: "APPLE", icon: "📱", color: "#A0A0A0", goal: "apple", items: [{ label: "iPhone 17 PM (c/ trade-in)", value: 769 }, { label: "AirPods Max 2", value: 549 }, { label: "AirPods Pro 3", value: 249 }, { label: "Tax Florida", value: 102 }] }
+];
+
+const typeColors = { park: "#FF6B35", car: "#E53935", rest: "#00BFA6", travel: "#78909C", shopping: "#FFB300", culture: "#7C4DFF" };
+
+// ==========================================
+// HOOK CUSTOMIZADO PARA LOCAL STORAGE
+// ==========================================
 function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch (e) { return initialValue; }
+    } catch (error) {
+      console.warn(error);
+      return initialValue;
+    }
   });
-  useEffect(() => { window.localStorage.setItem(key, JSON.stringify(storedValue)); }, [key, storedValue]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.warn(error);
+    }
+  }, [key, storedValue]);
+
   return [storedValue, setStoredValue];
 }
 
-// --- COMPONENTES DE ABA ---
+// ==========================================
+// COMPONENTES DAS ABAS
+// ==========================================
 
-function TodayView({ itinerary }) {
-  // Simulação de detecção de data (ou manual para teste)
-  const todayStr = "11/mai (seg)"; 
-  const currentDay = useMemo(() => {
-    return itinerary.flatMap(p => p.days).find(d => d.date.includes(todayStr));
-  }, [itinerary]);
+function DashboardTab({ checklist, daysToTrip, totalTripDays, savedViagem, goalViagemEst }) {
+  const totalItems = checklist.reduce((a, c) => a + c.items.length, 0);
+  const doneItems = checklist.reduce((a, c) => a + c.items.filter((i) => i.done).length, 0);
+  const progress = Math.round((doneItems / totalItems) * 100);
+  
+  const pctViagem = Math.min(100, Math.round((savedViagem / goalViagemEst) * 100));
+  const remainingViagem = Math.max(0, goalViagemEst - savedViagem);
+  const parkCount = ITINERARY.flatMap(p => p.days).filter(d => d.type === "park").length;
 
   return (
-    <div className="fade-in">
-      <div className="large-title">Hoje</div>
-      <div className="content-padding">
-        {currentDay ? (
-          <div className="ios-card">
-            <div className="ios-row">
-              <span style={{fontSize: '24px'}}>{currentDay.icon}</span>
-              <div style={{flex: 1, marginLeft: '12px'}}>
-                <div style={{fontWeight: '700', fontSize: '18px'}}>{currentDay.title}</div>
-                <div style={{color: 'var(--ios-secondary-text)', fontSize: '14px'}}>{currentDay.date}</div>
-              </div>
-            </div>
-            {currentDay.items.map((item, i) => (
-              <div key={i} className="ios-row" style={{justifyContent: 'flex-start', fontSize: '15px'}}>
-                <span style={{color: 'var(--ios-blue)', marginRight: '10px'}}>•</span> {item}
-              </div>
-            ))}
-            <div style={{padding: '12px 16px', background: '#2C2C2E', fontSize: '13px', color: '#FFD60A'}}>
-              💡 {currentDay.tip}
-            </div>
-          </div>
-        ) : (
-          <div className="ios-card" style={{padding: '20px', textAlign: 'center', color: '#8E8E93'}}>
-            Nenhuma atividade programada para hoje. Aproveite o descanso!
-          </div>
-        )}
+    <div>
+      <div style={{background:"linear-gradient(135deg,#FF6B35,#E53935)",borderRadius:"12px",padding:"24px",marginBottom:"16px",textAlign:"center"}}>
+        <div style={{fontSize:"10px",letterSpacing:"3px",color:"rgba(255,255,255,0.8)",textTransform:"uppercase",marginBottom:"4px"}}>Faltam</div>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"72px",letterSpacing:"2px",lineHeight:1,color:"#fff"}}>{daysToTrip > 0 ? daysToTrip : "0"}</div>
+        <div style={{fontSize:"12px",color:"rgba(255,255,255,0.9)",marginTop:"4px",letterSpacing:"1px"}}>{daysToTrip > 0 ? "DIAS PARA A VIAGEM" : "VIAGEM EM ANDAMENTO ✈️"}</div>
+        <div style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",marginTop:"8px"}}>09/mai → 30/mai · {totalTripDays} dias totais</div>
       </div>
-    </div>
-  );
-}
 
-function ItineraryView({ itinerary }) {
-  return (
-    <div className="fade-in">
-      <div className="large-title">Roteiro</div>
-      <div className="content-padding">
-        {itinerary.map((phase, pi) => (
-          <div key={pi}>
-            <div style={{color: phase.color, fontWeight: '700', fontSize: '13px', margin: '0 0 8px 4px', textTransform: 'uppercase'}}>{phase.phase}</div>
-            <div className="ios-card">
-              {phase.days.map((day, di) => (
-                <div key={di} className="ios-row">
-                  <div style={{display: 'flex', alignItems: 'center'}}>
-                    <span style={{fontSize: '20px', marginRight: '12px'}}>{day.icon}</span>
-                    <div>
-                      <div style={{fontSize: '15px', fontWeight: '600'}}>{day.title}</div>
-                      <div style={{fontSize: '12px', color: '#8E8E93'}}>{day.date}</div>
-                    </div>
-                  </div>
-                  <div style={{fontSize: '18px', color: '#38383A'}}>›</div>
-                </div>
-              ))}
-            </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(140px, 1fr))",gap:"10px",marginBottom:"16px"}}>
+        <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #00BFA6"}}>
+          <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Meta Viagem</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#00BFA6",lineHeight:1,marginTop:"4px"}}>{pctViagem}%</div>
+          <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>${savedViagem.toLocaleString()} / ${goalViagemEst.toLocaleString()}</div>
+          <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}><div style={{height:"100%",width:`${pctViagem}%`,background:"#00BFA6"}}/></div>
+        </div>
+        <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #FFB300"}}>
+          <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Falta Juntar</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#FFB300",lineHeight:1,marginTop:"4px"}}>${remainingViagem.toLocaleString()}</div>
+          <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>≈ R${(remainingViagem*5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
+        </div>
+        <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #7C4DFF"}}>
+          <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Checklist</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#7C4DFF",lineHeight:1,marginTop:"4px"}}>{progress}%</div>
+          <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>{doneItems} de {totalItems} itens</div>
+          <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}><div style={{height:"100%",width:`${progress}%`,background:"#7C4DFF"}}/></div>
+        </div>
+        <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #E91E63"}}>
+          <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Parques</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#E91E63",lineHeight:1,marginTop:"4px"}}>{parkCount}</div>
+          <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>dias de parque</div>
+        </div>
+      </div>
+
+      <div style={{background:"linear-gradient(135deg,#1a1208,#1a0a0a)",borderRadius:"10px",padding:"16px",border:"1px solid #2a1a1a"}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#FFB300",marginBottom:"10px"}}>⚡ PRÓXIMOS PASSOS</div>
+        {checklist.flatMap(c => c.items.filter(i => !i.done).map(i => ({...i, cat: c.category}))).slice(0, 5).map((item, i) => (
+          <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 0",borderBottom:"1px solid #1a1a1a"}}>
+            <span style={{color:"#FF6B35",fontSize:"10px"}}>●</span>
+            <span style={{fontSize:"12px",color:"#ccc",flex:1}}>{item.label}</span>
+            <span style={{fontSize:"9px",color:"#666",letterSpacing:"0.5px",textTransform:"uppercase"}}>{item.cat}</span>
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function FinanceView({ saved, setSaved, totalGoal }) {
-  const pct = Math.round((saved / totalGoal) * 100);
-  return (
-    <div className="fade-in">
-      <div className="large-title">Finanças</div>
-      <div className="content-padding">
-        <div className="ios-card" style={{padding: '20px', background: 'linear-gradient(180deg, #1C1C1E 0%, #000 100%)'}}>
-          <div style={{color: '#8E8E93', fontSize: '12px', fontWeight: '600'}}>TOTAL ECONOMIZADO</div>
-          <div style={{fontSize: '36px', fontWeight: '800', margin: '8px 0'}}>${saved.toLocaleString()}</div>
-          <div style={{height: '8px', background: '#38383A', borderRadius: '4px', overflow: 'hidden'}}>
-            <div style={{width: `${pct}%`, height: '100%', background: 'var(--ios-blue)'}} />
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '12px', color: '#8E8E93'}}>
-            <span>{pct}% da meta</span>
-            <span>Faltam ${(totalGoal - saved).toLocaleString()}</span>
-          </div>
-        </div>
-
-        <div style={{fontSize: '13px', color: '#8E8E93', margin: '0 4px 8px'}}>LANÇAR ECONOMIA</div>
-        <div className="ios-card" style={{padding: '16px'}}>
-          <input 
-            type="number" 
-            placeholder="Valor em USD"
-            style={{width: '100%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', fontSize: '16px'}}
-            onKeyDown={(e) => {
-              if(e.key === 'Enter') {
-                setSaved(prev => prev + Number(e.target.value));
-                e.target.value = '';
-              }
-            }}
-          />
-          <div style={{fontSize: '11px', color: '#444', marginTop: '8px', textAlign: 'center'}}>Pressione Enter para somar ao total</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DocsView({ docs, setDocs }) {
-  const [newDoc, setNewDoc] = useState({ title: '', code: '' });
-  return (
-    <div className="fade-in">
-      <div className="large-title">Docs</div>
-      <div className="content-padding">
-        <div className="ios-card" style={{padding: '16px'}}>
-          <input placeholder="Título (ex: Voo Spirit)" style={{width: '93%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', marginBottom: '10px'}} onChange={e=>setNewDoc({...newDoc, title: e.target.value})} />
-          <input placeholder="Confirmação / Código" style={{width: '93%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', marginBottom: '10px'}} onChange={e=>setNewDoc({...newDoc, code: e.target.value})} />
-          <button className="ios-button" onClick={() => {
-            if(newDoc.title) { setDocs([...docs, {...newDoc, id: Date.now()}]); setNewDoc({title:'', code:''}); }
-          }}>Salvar Documento</button>
-        </div>
-
-        {docs.length > 0 && (
-          <div className="ios-card">
-            {docs.map(doc => (
-              <div key={doc.id} className="ios-row">
-                <div>
-                  <div style={{fontWeight: '600'}}>{doc.title}</div>
-                  <div style={{fontSize: '12px', color: '#8E8E93'}}>{doc.code}</div>
-                </div>
-                <button style={{background: 'none', border: 'none', color: '#FF453A'}} onClick={() => setDocs(docs.filter(d=>d.id!==doc.id))}>Remover</button>
-              </div>
-            ))}
-          </div>
+        {checklist.every(c => c.items.every(i => i.done)) && (
+          <div style={{fontSize:"13px",color:"#00BFA6",textAlign:"center",padding:"12px"}}>✅ Tudo pronto! Boa viagem!</div>
         )}
       </div>
     </div>
   );
 }
 
-// --- APP PRINCIPAL ---
-
-function AppleTripApp() {
-  const [tab, setTab] = useState('today');
-  
-  // Dados persistentes
-  const [saved, setSaved] = useLocalStorage("usa2026_saved", 8000);
-  const [docs, setDocs] = useLocalStorage("usa2026_docs", []);
+function ItineraryTab() {
+  const [expandedDay, setExpandedDay] = useState(null);
   
   return (
-    <div className="app-container">
-      {tab === 'today' && <TodayView itinerary={ORIGINAL_ITINERARY} />}
-      {tab === 'itinerary' && <ItineraryView itinerary={ORIGINAL_ITINERARY} />}
-      {tab === 'finance' && <FinanceView saved={saved} setSaved={setSaved} totalGoal={10710} />}
-      {tab === 'docs' && <DocsView docs={docs} setDocs={setDocs} />}
+    <div>
+      {ITINERARY.map((phase) => (
+        <div key={phase.phase} style={{ marginBottom: "32px" }}>
+          <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"28px",letterSpacing:"2px",color:phase.phaseColor,marginBottom:"16px",display:"flex",alignItems:"center",gap:"10px"}}>
+            <div style={{width:"4px",height:"24px",background:phase.phaseColor,borderRadius:"2px"}}/>
+            {phase.phase}
+          </div>
+          {phase.days.map((day, di) => {
+            const dayKey = `${phase.phase}-${di}`;
+            const isOpen = expandedDay === dayKey;
+            return (
+              <div key={dayKey} style={{background:isOpen?"#141414":"#111",borderLeft:`3px solid ${typeColors[day.type]}`,marginBottom:"8px",borderRadius:"0 8px 8px 0",overflow:"hidden"}}>
+                <button onClick={() => setExpandedDay(isOpen ? null : dayKey)} style={{width:"100%",padding:"14px 16px",background:"none",border:"none",color:"#E8E4DF",cursor:"pointer",display:"flex",alignItems:"center",gap:"12px",textAlign:"left"}}>
+                  <span style={{fontSize:"22px"}}>{day.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:"11px",color:"#888",textTransform:"uppercase"}}>{day.date}</div>
+                    <div style={{fontSize:"15px",fontWeight:600}}>{day.title}</div>
+                  </div>
+                  <span style={{color:"#555",fontSize:"18px",transform:isOpen?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s"}}>▾</span>
+                </button>
+                {isOpen && (
+                  <div style={{padding:"0 16px 16px 50px"}}>
+                    <ul style={{margin:0,padding:0,listStyle:"none"}}>
+                      {day.items.map((item, ii) => (
+                        <li key={ii} style={{padding:"6px 0",fontSize:"13px",color:"#ccc",borderBottom:"1px solid #1a1a1a",display:"flex",gap:"8px"}}>
+                          <span style={{color:typeColors[day.type],fontSize:"8px",marginTop:"3px"}}>●</span>{item}
+                        </li>
+                      ))}
+                    </ul>
+                    {day.tip && <div style={{marginTop:"12px",padding:"10px",background:"#1A1A1A",borderRadius:"6px",fontSize:"12px",color:"#999",borderLeft:`2px solid ${typeColors[day.type]}44`}}>💡 {day.tip}</div>}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
 
-      <nav className="tab-bar">
-        <button className={`tab-item ${tab==='today'?'active':''}`} onClick={()=>setTab('today')}>
-          <span className="tab-icon">􀉉</span>
-          <span>Hoje</span>
-        </button>
-        <button className={`tab-item ${tab==='itinerary'?'active':''}`} onClick={()=>setTab('itinerary')}>
-          <span className="tab-icon">􀈟</span>
-          <span>Roteiro</span>
-        </button>
-        <button className={`tab-item ${tab==='finance'?'active':''}`} onClick={()=>setTab('finance')}>
-          <span className="tab-icon">􀖀</span>
-          <span>Finanças</span>
-        </button>
-        <button className={`tab-item ${tab==='docs'?'active':''}`} onClick={()=>setTab('docs')}>
-          <span className="tab-icon">􀈦</span>
-          <span>Docs</span>
-        </button>
-      </nav>
+function ChecklistTab({ checklist, setChecklist }) {
+  const toggleCheck = (catIdx, itemIdx) => {
+    setChecklist(prev => prev.map((cat, ci) => ({
+      ...cat, items: cat.items.map((item, ii) => ci === catIdx && ii === itemIdx ? { ...item, done: !item.done } : item)
+    })));
+  };
+
+  const totalItems = checklist.reduce((a, c) => a + c.items.length, 0);
+  const doneItems = checklist.reduce((a, c) => a + c.items.filter((i) => i.done).length, 0);
+  const progress = Math.round((doneItems / totalItems) * 100);
+
+  return (
+    <div>
+      <div style={{marginBottom:"24px", display:"flex", justifyContent:"space-between", alignItems:"baseline"}}>
+        <span style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff"}}>PRÉ-VIAGEM</span>
+        <span style={{fontSize:"13px",color:progress===100?"#00BFA6":"#888",fontWeight:600}}>{progress}% concluído</span>
+      </div>
+      {checklist.map((cat, catIdx) => (
+        <div key={cat.category} style={{marginBottom:"24px"}}>
+          <div style={{fontSize:"11px",fontWeight:700,letterSpacing:"2px",textTransform:"uppercase",color:"#666",marginBottom:"8px"}}>{cat.category}</div>
+          {cat.items.map((item, itemIdx) => (
+            <button key={item.id} onClick={() => toggleCheck(catIdx, itemIdx)} style={{width:"100%",display:"flex",alignItems:"center",gap:"12px",padding:"12px",background:item.done?"#0f1a0f":"#111",border:"none",borderRadius:"6px",marginBottom:"4px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{width:"20px",height:"20px",borderRadius:"4px",border:item.done?"none":"2px solid #444",background:item.done?"#00BFA6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {item.done && <span style={{color:"#000",fontSize:"13px",fontWeight:700}}>✓</span>}
+              </div>
+              <span style={{fontSize:"14px",color:item.done?"#5a7a5a":"#ccc",textDecoration:item.done?"line-through":"none"}}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TicketsTab() {
+  return (
+    <div>
+      <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff",marginBottom:"4px"}}>INGRESSOS & TICKETS</div>
+      <div style={{fontSize:"12px",color:"#888",marginBottom:"24px"}}>Preços ref. abr/2026. USD sem tax (6.5%). Filha (2a8m) = grátis Disney/SeaWorld.</div>
+      {TICKETS.map(t => (
+        <div key={t.park} style={{background:"#111",borderRadius:"10px",padding:"20px",marginBottom:"16px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}}>
+            <span style={{fontSize:"28px"}}>{t.emoji}</span>
+            <div>
+              <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"22px",letterSpacing:"1px",color:"#fff"}}>{t.park}</div>
+              <div style={{fontSize:"13px",color:"#FF6B35",fontWeight:600}}>{t.estimatedCost}</div>
+            </div>
+          </div>
+          <ul style={{margin:0,padding:0,listStyle:"none"}}>
+            {t.details.map((d, i) => <li key={i} style={{padding:"4px 0",fontSize:"13px",color:"#aaa"}}>● {d}</li>)}
+          </ul>
+          <div style={{marginTop:"14px",padding:"12px",background:"#0a1a0a",borderRadius:"6px",borderLeft:"3px solid #00BFA6",fontSize:"13px",color:"#ccc"}}><strong style={{color:"#00BFA6"}}>Dica:</strong> {t.recommendation}</div>
+          <a href={t.buyLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginTop:"12px",fontSize:"12px",color:"#33CCFF",textDecoration:"none"}}>🔗 Comprar no Site Oficial</a>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FinanceTab({ savedViagem, setSavedViagem, savedApple, setSavedApple, viagemCash, appleCash }) {
+  const pctViagem = Math.min(100, Math.round((savedViagem / viagemCash) * 100));
+  const pctApple = appleCash > 0 ? Math.min(100, Math.round((savedApple / appleCash) * 100)) : 0;
+  
+  return (
+    <div>
+      <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff",marginBottom:"4px"}}>FINANCEIRO</div>
+      <div style={{fontSize:"12px",color:"#888",marginBottom:"20px"}}>Câmbio referência: R$5,00/USD. Estimativas em USD.</div>
+
+      {/* Painel Editável de Metas */}
+      <div style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"24px",border:"1px solid #333"}}>
+        <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase",marginBottom:"12px"}}>Atualizar Caixa (USD)</div>
+        <div style={{display:"flex",gap:"12px",marginBottom:"12px"}}>
+          <div style={{flex:1}}>
+            <label style={{fontSize:"11px",color:"#00BFA6",display:"block",marginBottom:"4px"}}>Viagem Salvo ($)</label>
+            <input type="number" value={savedViagem} onChange={e => setSavedViagem(Number(e.target.value))} style={{width:"100%",padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}} />
+          </div>
+          <div style={{flex:1}}>
+            <label style={{fontSize:"11px",color:"#A0A0A0",display:"block",marginBottom:"4px"}}>Apple Salvo ($)</label>
+            <input type="number" value={savedApple} onChange={e => setSavedApple(Number(e.target.value))} style={{width:"100%",padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}} />
+          </div>
+        </div>
+        <div style={{height:"4px",background:"#222",borderRadius:"2px",overflow:"hidden",marginBottom:"4px"}}><div style={{height:"100%",width:`${pctViagem}%`,background:"#00BFA6"}}/></div>
+        <div style={{fontSize:"10px",textAlign:"right",color:"#666"}}>Viagem: {pctViagem}% concluído</div>
+      </div>
+
+      {/* Listagem das seções */}
+      {FINANCE_SECTIONS.map((s) => {
+        const sub = s.items.reduce((a, i) => a + i.value, 0);
+        return (
+          <div key={s.title} style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"12px",borderLeft:`3px solid ${s.color}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                <span style={{fontSize:"20px"}}>{s.icon}</span>
+                <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"15px",letterSpacing:"1px",color:"#fff"}}>{s.title}</span>
+              </div>
+              <span style={{fontSize:"13px",fontWeight:700,color:s.color}}>${sub.toLocaleString()}</span>
+            </div>
+            {s.items.map((i, idx) => (
+              <div key={idx} style={{display:"flex",justifyContent:"space-between",fontSize:"12px",color:"#aaa",padding:"3px 0"}}>
+                <span>{i.label} {i.card && <span style={{fontSize:"9px",background:"#1a2a4a",color:"#7eb6ff",padding:"2px 4px",borderRadius:"3px"}}>💳</span>}</span>
+                <span style={{color: i.card ? "#7eb6ff" : "#ccc"}}>${i.value.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// NOVA ABA: DOCUMENTOS E ANEXOS
+function DocsTab({ docs, setDocs }) {
+  const [form, setForm] = useState({ title: '', category: 'Voo', link: '', code: '' });
+
+  const addDoc = (e) => {
+    e.preventDefault();
+    if(!form.title) return;
+    setDocs([...docs, { ...form, id: Date.now() }]);
+    setForm({ title: '', category: 'Voo', link: '', code: '' });
+  };
+
+  const removeDoc = (id) => {
+    setDocs(docs.filter(d => d.id !== id));
+  };
+
+  const catColors = { "Voo": "#78909C", "Hospedagem": "#00BFA6", "Ingresso": "#FF6B35", "Carro": "#E53935", "Outros": "#A0A0A0" };
+
+  return (
+    <div>
+      <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff",marginBottom:"4px"}}>DOCUMENTOS & ANEXOS</div>
+      <div style={{fontSize:"12px",color:"#888",marginBottom:"20px"}}>Salve aqui os links dos PDFs (Google Drive) e códigos de reserva.</div>
+
+      {/* Formulário de Adição */}
+      <form onSubmit={addDoc} style={{background:"#111",padding:"16px",borderRadius:"10px",marginBottom:"24px",border:"1px solid #333"}}>
+        <div style={{display:"flex",gap:"10px",marginBottom:"10px"}}>
+          <input placeholder="Título (ex: Voo Spirit MCO-MIA)" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} style={{flex:2,padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}} required />
+          <select value={form.category} onChange={e=>setForm({...form, category: e.target.value})} style={{flex:1,padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}}>
+            <option>Voo</option><option>Hospedagem</option><option>Ingresso</option><option>Carro</option><option>Outros</option>
+          </select>
+        </div>
+        <div style={{display:"flex",gap:"10px",marginBottom:"12px"}}>
+          <input placeholder="Código de Confirmação (opcional)" value={form.code} onChange={e=>setForm({...form, code: e.target.value})} style={{flex:1,padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}} />
+          <input placeholder="Link do PDF ou Site (opcional)" type="url" value={form.link} onChange={e=>setForm({...form, link: e.target.value})} style={{flex:2,padding:"10px",borderRadius:"6px",border:"1px solid #222",background:"#000",color:"#fff",fontFamily:"'Outfit'"}} />
+        </div>
+        <button type="submit" style={{width:"100%",padding:"12px",background:"#00BFA6",color:"#000",border:"none",borderRadius:"6px",fontWeight:700,cursor:"pointer",fontFamily:"'Outfit'"}}>+ ADICIONAR DOCUMENTO</button>
+      </form>
+
+      {/* Lista de Documentos Salvos */}
+      {docs.length === 0 ? (
+        <div style={{textAlign:"center",padding:"20px",color:"#555",fontSize:"13px"}}>Nenhum documento anexado ainda.</div>
+      ) : (
+        <div style={{display:"grid",gap:"10px"}}>
+          {docs.map(doc => (
+            <div key={doc.id} style={{background:"#111",borderLeft:`4px solid ${catColors[doc.category]}`,borderRadius:"8px",padding:"14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:"10px",color:catColors[doc.category],textTransform:"uppercase",fontWeight:700,marginBottom:"4px"}}>{doc.category}</div>
+                <div style={{fontSize:"15px",fontWeight:600,color:"#fff",marginBottom:"4px"}}>{doc.title}</div>
+                {doc.code && <div style={{fontSize:"12px",color:"#aaa"}}><span style={{color:"#666"}}>Código:</span> <strong style={{color:"#fff",background:"#222",padding:"2px 6px",borderRadius:"4px",letterSpacing:"1px"}}>{doc.code}</strong></div>}
+              </div>
+              <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
+                {doc.link && <a href={doc.link} target="_blank" rel="noopener noreferrer" style={{background:"#222",color:"#33CCFF",padding:"8px 12px",borderRadius:"6px",fontSize:"11px",textDecoration:"none",fontWeight:600}}>ABRIR LINK</a>}
+                <button onClick={() => removeDoc(doc.id)} style={{background:"transparent",border:"1px solid #444",color:"#888",padding:"8px 10px",borderRadius:"6px",cursor:"pointer"}}>✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// APLICATIVO PRINCIPAL
+// ==========================================
+function TripPlanner() {
+  const [tab, setTab] = useState("dashboard");
+  
+  // Estados salvos no LocalStorage
+  const [checklist, setChecklist] = useLocalStorage("usa2026_checklist", CHECKLIST_DATA);
+  const [savedViagem, setSavedViagem] = useLocalStorage("usa2026_savedViagem", 8000);
+  const [savedApple, setSavedApple] = useLocalStorage("usa2026_savedApple", 0);
+  const [docs, setDocs] = useLocalStorage("usa2026_docs", []);
+
+  // Cálculos Globais de Datas
+  const tripStart = new Date("2026-05-09T00:00:00");
+  const tripEnd = new Date("2026-05-30T00:00:00");
+  const today = new Date();
+  const msDay = 1000 * 60 * 60 * 24;
+  const daysToTrip = Math.ceil((tripStart - today) / msDay);
+  const totalTripDays = Math.ceil((tripEnd - tripStart) / msDay) + 1;
+
+  // Cálculos Financeiros
+  const viagemSections = FINANCE_SECTIONS.filter(s => s.goal !== "apple");
+  const appleSections = FINANCE_SECTIONS.filter(s => s.goal === "apple");
+  const viagemCash = viagemSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
+  const appleCash = appleSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div style={{padding:"0 0 40px 0"}}>
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+      {/* HEADER */}
+      <div style={{padding:"32px 20px 0px",borderBottom:"1px solid #222",position:"sticky",top:0,background:"rgba(13,13,13,0.95)",backdropFilter:"blur(10px)",zIndex:10}}>
+        <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"42px",letterSpacing:"3px",lineHeight:1,color:"#fff"}}>USA 2026</div>
+        <div style={{fontSize:"13px",color:"#888",marginTop:"4px",letterSpacing:"1px",textTransform:"uppercase"}}>9 mai — 31 mai · FL & MO</div>
+
+        {/* NAVEGAÇÃO */}
+        <div style={{display:"flex",overflowX:"auto",marginTop:"20px",scrollbarWidth:"none"}}>
+          {[
+            { id: "dashboard", label: "Home" },
+            { id: "itinerary", label: "Roteiro" },
+            { id: "checklist", label: "Check" },
+            { id: "tickets", label: "Tickets" },
+            { id: "finance", label: "$$$" },
+            { id: "docs", label: "Docs" }
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleTabChange(t.id)}
+              style={{flexShrink:0,padding:"14px 16px",background:"transparent",color:tab===t.id?"#fff":"#666",border:"none",borderBottom:tab===t.id?"2px solid #FF6B35":"2px solid transparent",fontFamily:"'Outfit', sans-serif",fontSize:"13px",fontWeight:tab===t.id?700:500,letterSpacing:"1px",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ÁREA DE CONTEÚDO */}
+      <div style={{padding:"20px"}}>
+        {tab === "dashboard" && <DashboardTab checklist={checklist} daysToTrip={daysToTrip} totalTripDays={totalTripDays} savedViagem={savedViagem} goalViagemEst={viagemCash} />}
+        {tab === "itinerary" && <ItineraryTab />}
+        {tab === "checklist" && <ChecklistTab checklist={checklist} setChecklist={setChecklist} />}
+        {tab === "tickets" && <TicketsTab />}
+        {tab === "finance" && <FinanceTab savedViagem={savedViagem} setSavedViagem={setSavedViagem} savedApple={savedApple} setSavedApple={setSavedApple} viagemCash={viagemCash} appleCash={appleCash} />}
+        {tab === "docs" && <DocsTab docs={docs} setDocs={setDocs} />}
+      </div>
     </div>
   );
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<AppleTripApp />);
+root.render(<TripPlanner />);
     </script>
 </body>
 </html>
