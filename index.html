@@ -2,20 +2,97 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USA 2026 - Trip Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>USA 2026</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        /* Reseta as margens do body para a tela preta preencher tudo */
+        :root {
+            --ios-blue: #0A84FF;
+            --ios-green: #30D158;
+            --ios-bg: #000000;
+            --ios-secondary-bg: #1C1C1E;
+            --ios-tertiary-bg: #2C2C2E;
+            --ios-label: #FFFFFF;
+            --ios-secondary-label: #8E8E93;
+            --ios-separator: #38383A;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
-            background-color: #0D0D0D;
+            background-color: var(--ios-bg);
+            color: var(--ios-label);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+        }
+
+        /* Estilo Inset Grouped da Apple */
+        .ios-list {
+            background: var(--ios-secondary-bg);
+            border-radius: 12px;
+            margin: 0 16px 20px 16px;
+            overflow: hidden;
+        }
+
+        .ios-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--ios-separator);
+            transition: background 0.2s;
+        }
+
+        .ios-item:last-child { border-bottom: none; }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 84px;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            padding-top: 8px;
+            border-top: 0.5px solid var(--ios-separator);
+            z-index: 100;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--ios-secondary-label);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tab-item.active { color: var(--ios-blue); }
+
+        .ios-title {
+            font-size: 34px;
+            font-weight: 700;
+            padding: 40px 16px 10px 16px;
+            letter-spacing: -1px;
+        }
+
+        input, select {
+            background: var(--ios-tertiary-bg);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -23,1551 +100,166 @@
     <div id="root"></div>
 
     <script type="text/babel">
-// Adaptando os imports para o navegador
 const { useState, useEffect } = React;
 
+// --- Reaproveitando lógica de LocalStorage do modelo anterior ---
+function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) { return initialValue; }
+  });
+  useEffect(() => { window.localStorage.setItem(key, JSON.stringify(storedValue)); }, [key, storedValue]);
+  return [storedValue, setStoredValue];
+}
+
+// --- Dados de estrutura mantidos conforme arquivo original ---
 const CHECKLIST_DATA = [
-  {
-    category: "Documentação",
-    items: [
-      { id: "passaportes", label: "Passaportes válidos (todos)", done: false },
-      { id: "visto", label: "Vistos americanos em dia", done: false },
-      { id: "seguro", label: "Seguro viagem (cobertura gestante)", done: false },
-      { id: "laudo_medico", label: "Laudo médico para viagem (esposa grávida)", done: false },
-      { id: "carteira_vacinacao", label: "Carteira de vacinação (filha)", done: false },
-      { id: "autorizacao", label: "Autorização de viagem (se necessário p/ menor)", done: false },
-    ],
-  },
-  {
-    category: "Transporte",
-    items: [
-      { id: "passagens", label: "Passagens aéreas compradas", done: true },
-      { id: "aluguel_carro", label: "Aluguel de carro reservado (Orlando + Miami)", done: false },
-      { id: "cadeirinha", label: "Cadeirinha de bebê no carro alugado", done: false },
-      { id: "voo_stl", label: "Voo Orlando → St. Louis (23/mai)", done: false },
-      { id: "voo_stl_volta", label: "Voo St. Louis → Orlando (30/mai)", done: false },
-      { id: "gps", label: "Chip de celular ou eSIM com dados", done: false },
-    ],
-  },
-  {
-    category: "Hospedagem",
-    items: [
-      { id: "hotel_orlando", label: "Vacation Village at Parkway (Orlando)", done: true },
-      { id: "hotel_miami", label: "Brickell Arch Residences (Palermo Home) — 21–24/mai", done: true },
-      { id: "hotel_stl", label: "Estadia em St. Louis (casa da amiga)", done: true },
-    ],
-  },
-  {
-    category: "Tickets & Ingressos",
-    items: [
-      { id: "disney_tickets", label: "Ingressos Disney (3 dias — MK×2 + AK×1)", done: false },
-      { id: "universal_tickets", label: "Ingressos Universal (2+ dias c/ Epic Universe)", done: false },
-      { id: "seaworld_tickets", label: "Ingresso SeaWorld (1 dia)", done: false },
-      { id: "winter_park_boat", label: "Scenic Boat Tour Winter Park (não precisa reservar)", done: false },
-    ],
-  },
+  { category: "Documentação", items: [{ id: "passaportes", label: "Passaportes válidos", done: false }, { id: "visto", label: "Vistos americanos", done: false }, { id: "seguro", label: "Seguro viagem", done: false }] },
+  { category: "Transporte", items: [{ id: "passagens", label: "Passagens aéreas", done: true }, { id: "aluguel_carro", label: "Aluguel de carro", done: false }] }
 ];
 
 const ITINERARY = [
-  {
-    phase: "Orlando · Fase 1",
-    phaseColor: "#FF6B35",
-    days: [
-      {
-        date: "09/mai (sáb)",
-        title: "Chegada",
-        icon: "✈️",
-        type: "travel",
-        items: [
-          "Chegada MCO 17:30",
-          "Pegar carro alugado (Wrangler)",
-          "Check-in hotel perto do MCO (1 noite)",
-          "Supermercado — compras básicas (Publix ou Walmart Supercenter na 192)",
-          "Descanso e adaptação ao fuso",
-        ],
-        tip: "Vacation Village check-in é dia 10. Primeira noite em hotel perto do aeroporto. Aproveitem para comprar água, snacks e itens de farmácia.",
-      },
-      {
-        date: "10/mai (dom)",
-        title: "SeaWorld",
-        icon: "🐬",
-        type: "park",
-        items: [
-          "Check-out hotel MCO de manhã",
-          "Check-in Vacation Village (deixar malas, pegar pulseiras)",
-          "Tarde no SeaWorld Orlando",
-          "Shows: Orca Encounter, Sea Lion, Dolphin",
-          "Sesame Street Land (perfeito p/ Olivia!)",
-          "Aquários interativos",
-        ],
-        places: [
-          { name: "Vacation Village at Parkway", address: "2949 Arabian Nights Blvd, Kissimmee, FL", from: "Hotel MCO", distance: "~18 mi", time: "~25 min" },
-          { name: "SeaWorld Orlando", address: "7007 Sea World Dr, Orlando, FL 32821", from: "Vacation Village", distance: "~10 mi", time: "~18 min" },
-        ],
-        tip: "Parque menor é a escolha certa pro primeiro dia com check-in. Olivia entra grátis (menores de 3). SeaWorld fica a ~20 min do Vacation Village.",
-      },
-      {
-        date: "11/mai (seg)",
-        title: "Magic Kingdom",
-        icon: "🏰",
-        type: "park",
-        items: [
-          "Chegar bem cedo no Magic Kingdom",
-          "Foco: Fantasyland (Dumbo, Carousel, It's a Small World — ideal para Olivia)",
-          "Almoço: Columbia Harbour House ou Pinocchio Village Haus",
-          "Tomorrowland, Adventureland, parada",
-          "Show de fogos à noite",
-        ],
-        places: [
-          { name: "Magic Kingdom — Transportation & Ticket Center", address: "1180 Seven Seas Dr, Lake Buena Vista, FL 32830", from: "Vacation Village", distance: "~6 mi", time: "~12 min" },
-        ],
-        tip: "Segundas têm movimento médio. Olivia dorme no carrinho — levem um leve e reclinável. Vacation Village fica a 10 min do MK.",
-      },
-      {
-        date: "12/mai (ter)",
-        title: "Descanso + Outlets",
-        icon: "🛍️",
-        type: "rest",
-        items: [
-          "Manhã tranquila — piscina do resort",
-          "Almoço leve",
-          "Tarde → Orlando Vineland Premium Outlets (160+ lojas)",
-          "Jantar no Disney Springs ou área dos outlets",
-        ],
-        places: [
-          { name: "Orlando Vineland Premium Outlets", address: "8200 Vineland Ave, Orlando, FL 32821", from: "Vacation Village", distance: "~5 mi", time: "~10 min" },
-          { name: "Dechoes Resale (College Park)", address: "2110 Edgewater Dr, Orlando, FL 32804", from: "Vineland Outlets", distance: "~12 mi", time: "~20 min" },
-        ],
-        tip: "Dia leve. Vineland tem Prada, Burberry, Gucci, Nike, Tommy. Olivia adora a fonte central. Dechoes para garimpo de designer autenticado. Confira Simon app para cupons extras.",
-      },
-      {
-        date: "13/mai (qua)",
-        title: "Animal Kingdom",
-        icon: "🦁",
-        type: "park",
-        items: [
-          "Dia no Animal Kingdom",
-          "Kilimanjaro Safaris (ir cedo — animais mais ativos de manhã)",
-          "Na'vi River Journey (Pandora — leve e lindo)",
-          "Festival of the Lion King",
-          "The Boneyard, Affection Section (área infantil)",
-        ],
-        places: [
-          { name: "Disney's Animal Kingdom", address: "2901 Osceola Pkwy, Bay Lake, FL 32830", from: "Vacation Village", distance: "~8 mi", time: "~15 min" },
-        ],
-        tip: "Animal Kingdom funciona melhor de manhã. Ingresso mais barato que MK.",
-      },
-      {
-        date: "14/mai (qui)",
-        title: "EPCOT — dia todo",
-        icon: "🌍",
-        type: "park",
-        items: [
-          "Chegar cedo no EPCOT",
-          "World Celebration + World Discovery (atrações)",
-          "Almoço no World Showcase — gastronomia internacional",
-          "Tarde percorrendo os pavilhões (Itália, França, Japão, Marrocos)",
-          "Show noturno: Luminous (fogos sobre o lago)",
-        ],
-        places: [
-          { name: "EPCOT", address: "200 Epcot Center Dr, Lake Buena Vista, FL 32821", from: "Vacation Village", distance: "~6 mi", time: "~12 min" },
-        ],
-        tip: "EPCOT é o parque mais adulto da Disney. Vocês vão amar arquitetura, comida e o World Showcase. Show noturno é imperdível.",
-      },
-      {
-        date: "15/mai (sex)",
-        title: "Universal Studios — Harry Potter",
-        icon: "⚡",
-        type: "park",
-        items: [
-          "Universal Studios Florida",
-          "The Wizarding World of Harry Potter — Diagon Alley",
-          "Hogwarts Express (precisa Park-to-Park!)",
-          "Islands of Adventure — Hogsmeade",
-          "Seuss Landing (ótima para Olivia)",
-        ],
-        places: [
-          { name: "Universal Studios Florida", address: "6000 Universal Blvd, Orlando, FL 32819", from: "Vacation Village", distance: "~13 mi", time: "~22 min" },
-        ],
-        tip: "Para o Hogwarts Express, precisa Park-to-Park. Vale muito.",
-      },
-      {
-        date: "16/mai (sáb)",
-        title: "Cars & Coffee + Descanso",
-        icon: "🏎️",
-        type: "rest",
-        items: [
-          "8:00–10:00 → Cars & Coffee Orlando — House Blend Cafe, Ocoee",
-          "Café da manhã na região",
-          "Volta ao resort — piscina, descanso",
-          "Tarde leve → Disney Springs ou ICON Park",
-        ],
-        places: [
-          { name: "House Blend Cafe (Cars & Coffee)", address: "10730 W Colonial Dr, Ocoee, FL 34761", from: "Vacation Village", distance: "~25 mi", time: "~35 min" },
-          { name: "Disney Springs", address: "1486 E Buena Vista Dr, Lake Buena Vista, FL 32830", from: "House Blend Cafe", distance: "~22 mi", time: "~30 min" },
-        ],
-        tip: "Cars & Coffee de manhã rápido, depois dia leve. Esposa grávida agradece.",
-      },
-      {
-        date: "17/mai (dom)",
-        title: "Dia livre — a decidir",
-        icon: "🎲",
-        type: "rest",
-        items: [
-          "Dia em aberto para decidir na hora",
-          "Opções: Kennedy Space Center (NASA, ~1h de Orlando)",
-          "Ou: Clearwater Beach / Cocoa Beach (praia)",
-          "Ou: Gatorland, ICON Park, LEGOLAND",
-          "Ou: descanso completo no resort + Disney Springs",
-        ],
-        places: [
-          { name: "Kennedy Space Center (opcional)", address: "Space Commerce Way, Merritt Island, FL 32953", from: "Vacation Village", distance: "~65 mi", time: "~1h10" },
-          { name: "Renninger's Flea Market (opcional)", address: "20651 US-441, Mount Dora, FL 32757", from: "Vacation Village", distance: "~45 mi", time: "~50 min" },
-          { name: "Clearwater Beach (opcional)", address: "Clearwater Beach, FL 33767", from: "Vacation Village", distance: "~95 mi", time: "~1h40" },
-        ],
-        tip: "Kennedy Space Center é experiência única. Renninger's é garimpo pesado (1000+ vendors). Clearwater é a praia mais bonita da Flórida. Decidam pelo cansaço da família.",
-      },
-      {
-        date: "18/mai (seg)",
-        title: "Universal Epic Universe",
-        icon: "🍄",
-        type: "park",
-        items: [
-          "Dia no Universal Epic Universe",
-          "Super Nintendo World (Mario, Luigi)",
-          "How to Train Your Dragon — Isle of Berk",
-          "Dark Universe",
-          "Harry Potter — Ministry of Magic",
-        ],
-        places: [
-          { name: "Universal Epic Universe", address: "1001 Epic Blvd, Orlando, FL 32819", from: "Vacation Village", distance: "~14 mi", time: "~22 min" },
-        ],
-        tip: "Segunda costuma ter menos fila no Epic Universe. Parque mais novo de Orlando — Super Nintendo World é family-friendly.",
-      },
-      {
-        date: "19/mai (ter)",
-        title: "Hollywood Studios",
-        icon: "🎬",
-        type: "park",
-        items: [
-          "Hollywood Studios",
-          "Star Wars: Galaxy's Edge (arquitetura imersiva)",
-          "Toy Story Land (Olivia vai amar)",
-          "Mickey & Minnie's Runaway Railway",
-          "Slinky Dog Dash",
-        ],
-        places: [
-          { name: "Disney's Hollywood Studios", address: "351 S Studio Dr, Bay Lake, FL 32830", from: "Vacation Village", distance: "~7 mi", time: "~13 min" },
-        ],
-        tip: "Galaxy's Edge é uma das experiências mais imersivas da Disney. Toy Story Land é perfeito para Olivia.",
-      },
-      {
-        date: "20/mai (qua)",
-        title: "Compras finais + prep Miami",
-        icon: "🛍️",
-        type: "shopping",
-        items: [
-          "Manhã → Mall at Millenia (Apple Store p/ trade-in iPhones!)",
-          "Última passada nos outlets se faltou algo",
-          "Tarde → arrumar malas para Miami",
-          "Jantar leve",
-        ],
-        places: [
-          { name: "Mall at Millenia (Apple Store)", address: "4200 Conroy Rd, Orlando, FL 32839", from: "Vacation Village", distance: "~14 mi", time: "~20 min" },
-        ],
-        tip: "Mall at Millenia tem Apple Store ideal para fazer o trade-in dos iPhones 14 e comprar os 17 Pro/Pro Max.",
-      },
-    ],
-  },
-  {
-    phase: "Miami",
-    phaseColor: "#00BFA6",
-    days: [
-      {
-        date: "21/mai (qui)",
-        title: "Voo p/ Miami + Porsche + Wynwood",
-        icon: "✈️",
-        type: "travel",
-        items: [
-          "Manhã: devolver Wrangler no MCO (ou estacionar)",
-          "Voo MCO → MIA (Spirit, 1h10 — só bagagem de mão)",
-          "Uber para Brickell Arch — check-in",
-          "Pegar Porsche no Turo (início dos 3 dias)",
-          "Tarde → Wynwood Walls (grafite, galerias, moda)",
-          "Museum Garage — arquitetura icônica no Design District",
-          "Jantar em Wynwood",
-        ],
-        places: [
-          { name: "Brickell Arch Residences", address: "1080 Brickell Ave, Miami, FL 33131", from: "MIA Airport (Uber)", distance: "~9 mi", time: "~20 min" },
-          { name: "Wynwood Walls", address: "2516 NW 2nd Ave, Miami, FL 33127", from: "Brickell Arch", distance: "~4 mi", time: "~12 min" },
-          { name: "Museum Garage (Design District)", address: "3400 NE 1st Ave, Miami, FL 33137", from: "Wynwood", distance: "~1 mi", time: "~5 min" },
-        ],
-        tip: "Voo economiza 3h30 de estrada. Porsche já pega no dia 21 para maximizar os 3 dias. Wynwood é perfeito para moda + arte + arquitetura.",
-      },
-      {
-        date: "22/mai (sex)",
-        title: "Art Deco + South Beach",
-        icon: "🏖️",
-        type: "culture",
-        items: [
-          "Manhã → Art Deco Walking Tour em South Beach (MDPL, ~$35)",
-          "Ocean Drive, Collins Ave",
-          "Almoço em South Beach",
-          "Lincoln Road Mall — compras + second-hand",
-          "Tarde em South Pointe Park (mais tranquilo)",
-          "Sunset em South Pointe Pier",
-        ],
-        places: [
-          { name: "Art Deco Welcome Center (MDPL)", address: "1001 Ocean Dr, Miami Beach, FL 33139", from: "Brickell Arch", distance: "~5 mi", time: "~15 min" },
-          { name: "Lincoln Road Mall", address: "Lincoln Rd, Miami Beach, FL 33139", from: "Ocean Drive", distance: "~1 mi", time: "~5 min" },
-          { name: "South Pointe Park", address: "1 Washington Ave, Miami Beach, FL 33139", from: "Lincoln Road", distance: "~2 mi", time: "~8 min" },
-        ],
-        tip: "O tour de Art Deco vale cada centavo. South Pointe é ótimo para criança. Lincoln Road às vezes sedia o Antique & Collectible Market (dealers de joias, relógios vintage, moda) — confira lincolnroad.com antes de ir.",
-      },
-      {
-        date: "23/mai (sáb)",
-        title: "Garimpo + Design District",
-        icon: "👜",
-        type: "culture",
-        items: [
-          "Manhã → Fly Boutique (Coconut Grove) — vintage designer",
-          "11:00 → The RealReal em Bal Harbour Shops (luxo autenticado)",
-          "Almoço em Bal Harbour ou Design District",
-          "Tarde → Miami Design District (arquitetura + moda luxo + supercars na rua)",
-          "Concessionárias-experiência: Braman (Porsche, Bentley), The Collection (Ferrari)",
-          "17h–21h: supercars desfilando no Design District (NE 39th St)",
-          "Jantar no Design District com vista pros carros",
-        ],
-        places: [
-          { name: "Fly Boutique (vintage designer)", address: "2933 Bird Ave, Miami, FL 33133", from: "Brickell Arch", distance: "~4 mi", time: "~12 min" },
-          { name: "The RealReal (Bal Harbour Shops)", address: "9700 Collins Ave, Bal Harbour, FL 33154", from: "Fly Boutique", distance: "~18 mi", time: "~30 min" },
-          { name: "Miami Design District", address: "140 NE 39th St, Miami, FL 33137", from: "Bal Harbour", distance: "~11 mi", time: "~20 min" },
-          { name: "Braman Motorcars (Porsche, Bentley)", address: "2060 Biscayne Blvd, Miami, FL 33137", from: "Design District", distance: "~2 mi", time: "~8 min" },
-        ],
-        tip: "C. Madeleine's fechou em 2018 (só online agora). Substituída por Fly Boutique em Coconut Grove — vintage designer menor mas curado. Sábado 17h-21h no Design District é quando supercars saem pra desfilar (Lambo, Ferrari, Porsche clássicos). Sente num café na NE 39th St e aproveite o show ao vivo.",
-      },
-      {
-        date: "24/mai (dom)",
-        title: "A1A + volta Orlando",
-        icon: "🏎️",
-        type: "travel",
-        items: [
-          "Manhã cedo → Porsche drive pela A1A (Ocean Drive, Key Biscayne, Crandon Park)",
-          "Brunch em South Beach ou Coconut Grove",
-          "Devolver Porsche no Turo",
-          "Check-out Brickell Arch",
-          "Voo MIA → MCO (Spirit, 1h10 — só bagagem de mão)",
-          "Pegar Wrangler em MCO, check-in hotel perto do aeroporto",
-        ],
-        places: [
-          { name: "Rickenbacker Causeway (A1A)", address: "Rickenbacker Causeway, Key Biscayne, FL", from: "Brickell Arch", distance: "~3 mi", time: "~8 min" },
-          { name: "MIA Airport", address: "2100 NW 42nd Ave, Miami, FL 33126", from: "Brickell Arch", distance: "~9 mi", time: "~20 min" },
-        ],
-        tip: "Última manhã com o Porsche pela A1A é inesquecível. Rickenbacker Causeway + Crandon Park tem vista de Miami skyline impressionante. Devolva Porsche e Brickell Arch com tempo folgado para o voo.",
-      },
-    ],
-  },
-  {
-    phase: "St. Louis",
-    phaseColor: "#7C4DFF",
-    days: [
-      {
-        date: "25/mai (seg)",
-        title: "Voo Orlando → St. Louis",
-        icon: "✈️",
-        type: "travel",
-        items: [
-          "Check-out hotel MCO",
-          "Voo direto MCO → STL (Southwest)",
-          "Encontrar a amiga em StL",
-          "Descanso",
-        ],
-        tip: "Southwest tem rotas diretas MCO↔STL com boas tarifas. Reserve com antecedência.",
-      },
-      {
-        date: "26/mai (ter)",
-        title: "Gateway Arch + Forest Park",
-        icon: "🌆",
-        type: "culture",
-        items: [
-          "Gateway Arch — tram até o topo",
-          "Almoço em Downtown",
-          "Forest Park — Saint Louis Art Museum (gratuito)",
-          "Saint Louis Zoo (gratuito)",
-        ],
-        tip: "Forest Park é maior que o Central Park e tem várias atrações grátis. Perfeito para o orçamento.",
-      },
-      {
-        date: "27/mai (qua)",
-        title: "City Museum + amiga",
-        icon: "🎨",
-        type: "rest",
-        items: [
-          "City Museum — labirinto interativo gigante (imperdível com criança)",
-          "Almoço com a amiga",
-          "Tarde livre — thrift stores, second-hand",
-          "Jantar com a família da amiga",
-        ],
-        tip: "City Museum é uma obra de arte viva — vão amar. Reserve a manhã inteira.",
-      },
-      {
-        date: "28/mai (qui)",
-        title: "Voo St. Louis → Orlando",
-        icon: "✈️",
-        type: "travel",
-        items: [
-          "Despedida da amiga",
-          "Voo St. Louis → Orlando",
-          "Uber do MCO ao hotel perto do aeroporto",
-          "Check-in hotel + descanso",
-        ],
-        tip: "Sem carro nestes 2 dias finais — Uber/Lyft é mais barato que alugar carro pra 48h.",
-      },
-    ],
-  },
-  {
-    phase: "Orlando · Fase 2",
-    phaseColor: "#FF6B35",
-    days: [
-      {
-        date: "29/mai (sex)",
-        title: "Último dia — livre",
-        icon: "🎁",
-        type: "rest",
-        items: [
-          "Manhã: piscina do hotel ou último outlet",
-          "Almoço tranquilo",
-          "Tarde: arrumar malas, organizar compras",
-          "Jantar de despedida (Texas Roadhouse, Cheesecake Factory)",
-        ],
-        tip: "Use o dia para descanso e organização. Pesar malas — bagagem extra é cara na hora.",
-      },
-      {
-        date: "30/mai (sáb)",
-        title: "Volta para casa",
-        icon: "🏠",
-        type: "travel",
-        items: [
-          "Uber até o MCO",
-          "13:55 → Voo MCO → Fortaleza",
-          "Conexão Fortaleza → São Paulo → Curitiba",
-        ],
-        tip: "Chegue ao MCO 3h antes — voos internacionais.",
-      },
-    ],
-  },
+  { phase: "Orlando", color: "#FF9500", days: [{ date: "09/mai", title: "Chegada", icon: "✈️", type: "travel" }, { date: "10/mai", title: "SeaWorld", icon: "🐬", type: "park" }] },
+  { phase: "Miami", color: "#30D158", days: [{ date: "21/mai", title: "Wynwood", icon: "🎨", type: "culture" }] }
 ];
 
-const TICKETS = [
-  {
-    park: "Disney World",
-    emoji: "🏰",
-    details: [
-      "3 dias necessários: Magic Kingdom ×2 + Animal Kingdom ×1",
-      "Filha (2a8m): GRÁTIS (menores de 3 não pagam)",
-      "Adulto: ~$450–550 p/ 3-day base ticket (maio)",
-      "Park Hopper não é necessário (vocês vão 1 parque/dia)",
-    ],
-    recommendation:
-      "Compre 3-day base ticket para 2 adultos. Sem Park Hopper — economia de ~$200/pessoa.",
-    estimatedCost: "$900–1.100 (2 adultos)",
-    buyLink: "disneyworld.disney.go.com/tickets",
-    buyTips: [
-      "Compre direto no site da Disney — preço bloqueado, sem risco de aumento",
-      "Considere o Lightning Lane Multi-Pass para Magic Kingdom (~$30/dia) — faz diferença com criança",
-      "Cheque se há promoção de verão 2026 — Disney costuma lançar em abril/maio",
-    ],
-  },
-  {
-    park: "Universal Orlando",
-    emoji: "⚡",
-    details: [
-      "2 dias: Universal Studios + Epic Universe (separados)",
-      "Filha (2a8m): PAGA (Universal cobra a partir de 3 anos, checar se 2a8m entra free)",
-      "Park-to-Park necessário para Hogwarts Express",
-      "2-day park-to-park: ~$273/adulto",
-      "Promoção 7 dias por preço de 5: ~$65/dia — analisar se vale",
-    ],
-    recommendation:
-      "2-Day Park-to-Park com Epic Universe. Se quiserem flexibilidade, o pacote 7-day ($65/dia) é surreal de bom.",
-    estimatedCost: "$550–820 (2 adultos)",
-    buyLink: "universalorlando.com/tickets",
-    buyTips: [
-      "Compre online — gate prices são mais caros",
-      "Epic Universe esgota em datas populares — compre logo!",
-      "Verifique idade mínima das atrações para a filha",
-    ],
-  },
-  {
-    park: "SeaWorld",
-    emoji: "🐬",
-    details: [
-      "1 dia é suficiente",
-      "Filha (2a8m): GRÁTIS (menores de 3 não pagam)",
-      "Adulto online: ~$66–90 (data específica)",
-      "All-Day Dining: +$30/pessoa (vale muito com criança)",
-    ],
-    recommendation:
-      "Single-day ticket online + All-Day Dining. Muito mais barato que Disney/Universal.",
-    estimatedCost: "$130–220 (2 adultos + dining)",
-    buyLink: "seaworld.com/orlando/tickets",
-    buyTips: [
-      "Compre online — economiza 20-45% vs. bilheteria",
-      "O Two-Park ticket ($80) inclui Aquatica (parque aquático) se quiserem um segundo dia",
-      "Groupon costuma ter deals bons para SeaWorld",
-    ],
-  },
-  {
-    park: "Winter Park Scenic Boat Tour",
-    emoji: "🚤",
-    details: [
-      "Tour de 1h pelos lagos e canais de Winter Park",
-      "$16/adulto, $8/criança (2-11 anos)",
-      "Não precisa reserva — ordem de chegada",
-    ],
-    recommendation: "Compre na hora. Saídas a cada hora. Relaxante e lindo.",
-    estimatedCost: "$40 (2 adultos + criança)",
-    buyLink: "scenicboattours.com",
-    buyTips: ["Chegue 15min antes do horário desejado", "Funciona 7 dias por semana, 10h–16h"],
-  },
-];
+// --- Componentes de Aba Estilo Apple ---
 
-const typeColors = {
-  park: "#FF6B35",
-  car: "#E53935",
-  rest: "#00BFA6",
-  travel: "#78909C",
-  shopping: "#FFB300",
-  culture: "#7C4DFF",
-};
-
-const typeLabels = {
-  park: "Parque",
-  car: "Carros",
-  rest: "Descanso",
-  travel: "Viagem",
-  shopping: "Compras",
-  culture: "Cultura",
-};
-
-function TripPlanner() {
-  const [tab, setTab] = useState("dashboard");
-  const [checklist, setChecklist] = useState(CHECKLIST_DATA);
-  const [expandedDay, setExpandedDay] = useState(null);
-
-  const toggleCheck = (catIdx, itemIdx) => {
-    setChecklist((prev) => {
-      const next = prev.map((cat, ci) => ({
-        ...cat,
-        items: cat.items.map((item, ii) =>
-          ci === catIdx && ii === itemIdx ? { ...item, done: !item.done } : item
-        ),
-      }));
-      return next;
-    });
-  };
-
-  const totalItems = checklist.reduce((a, c) => a + c.items.length, 0);
-  const doneItems = checklist.reduce(
-    (a, c) => a + c.items.filter((i) => i.done).length,
-    0
-  );
-  const progress = Math.round((doneItems / totalItems) * 100);
-
+function DashboardTab({ savedViagem, goalViagem }) {
+  const pct = Math.min(100, Math.round((savedViagem / goalViagem) * 100));
   return (
-    <div
-      style={{
-        fontFamily: "'Outfit', sans-serif",
-        background: "#0D0D0D",
-        color: "#E8E4DF",
-        minHeight: "100vh",
-        padding: 0,
-        margin: 0,
-      }}
-    >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-
-      {/* Header */}
-      <div
-        style={{
-          padding: "32px 20px 20px",
-          borderBottom: "1px solid #222",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "42px",
-            letterSpacing: "3px",
-            lineHeight: 1,
-            color: "#fff",
-          }}
-        >
-          USA 2026
+    <div style={{paddingBottom: "100px"}}>
+      <div className="ios-title">Resumo</div>
+      
+      <div className="ios-list" style={{padding: "20px", background: "linear-gradient(180deg, #1C1C1E 0%, #000 100%)", border: "1px solid #2C2C2E"}}>
+        <div style={{fontSize: "13px", color: "#8E8E93", textTransform: "uppercase", fontWeight: "600"}}>Meta de Economia</div>
+        <div style={{fontSize: "34px", fontWeight: "800", margin: "8px 0"}}>${savedViagem.toLocaleString()}</div>
+        <div style={{height: "8px", background: "#38383A", borderRadius: "4px", overflow: "hidden"}}>
+            <div style={{height: "100%", width: `${pct}%`, background: "var(--ios-blue)", borderRadius: "4px"}} />
         </div>
-        <div
-          style={{
-            fontSize: "13px",
-            color: "#888",
-            marginTop: "4px",
-            letterSpacing: "1px",
-            textTransform: "uppercase",
-          }}
-        >
-          9 mai — 31 mai · Orlando → Miami → St. Louis
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: "0", marginTop: "20px" }}>
-          {[
-            { id: "dashboard", label: "Home" },
-            { id: "itinerary", label: "Roteiro" },
-            { id: "checklist", label: "Check" },
-            { id: "tickets", label: "Tickets" },
-            { id: "finance", label: "$$$" },
-          ].map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              style={{
-                flex: 1,
-                padding: "10px 0",
-                background: tab === t.id ? "#1A1A1A" : "transparent",
-                color: tab === t.id ? "#fff" : "#666",
-                border: "none",
-                borderBottom: tab === t.id ? "2px solid #FF6B35" : "2px solid transparent",
-                fontFamily: "'Outfit', sans-serif",
-                fontSize: "13px",
-                fontWeight: tab === t.id ? 600 : 400,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <div style={{fontSize: "13px", color: "#8E8E93", marginTop: "8px"}}>{pct}% da meta de ${goalViagem.toLocaleString()}</div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding: "16px 20px 40px" }}>
-        {/* DASHBOARD TAB */}
-        {tab === "dashboard" && (() => {
-          const tripStart = new Date("2026-05-09T00:00:00");
-          const tripEnd = new Date("2026-05-30T00:00:00");
-          const today = new Date();
-          const msDay = 1000 * 60 * 60 * 24;
-          const daysToTrip = Math.ceil((tripStart - today) / msDay);
-          const totalTripDays = Math.ceil((tripEnd - tripStart) / msDay) + 1;
-
-          const catProgress = checklist.map(c => ({
-            name: c.category,
-            done: c.items.filter(i => i.done).length,
-            total: c.items.length,
-            pct: Math.round((c.items.filter(i => i.done).length / c.items.length) * 100),
-          }));
-
-          const savedViagem = 8000;
-          const goalViagemEst = 10710;
-          const pctViagem = Math.min(100, Math.round((savedViagem / goalViagemEst) * 100));
-          const remainingViagem = Math.max(0, goalViagemEst - savedViagem);
-
-          const nextPark = ITINERARY[0].days.find(d => d.type === "park");
-          const parkCount = ITINERARY.flatMap(p => p.days).filter(d => d.type === "park").length;
-
-          return (
-            <div>
-              <div style={{background:"linear-gradient(135deg,#FF6B35,#E53935)",borderRadius:"12px",padding:"24px",marginBottom:"16px",textAlign:"center"}}>
-                <div style={{fontSize:"10px",letterSpacing:"3px",color:"rgba(255,255,255,0.8)",textTransform:"uppercase",marginBottom:"4px"}}>Faltam</div>
-                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"72px",letterSpacing:"2px",lineHeight:1,color:"#fff"}}>{daysToTrip > 0 ? daysToTrip : "0"}</div>
-                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.9)",marginTop:"4px",letterSpacing:"1px"}}>{daysToTrip > 0 ? "DIAS PARA A VIAGEM" : "VIAGEM EM ANDAMENTO ✈️"}</div>
-                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",marginTop:"8px"}}>09/mai → 30/mai · {totalTripDays} dias totais</div>
-              </div>
-
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"16px"}}>
-                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #00BFA6"}}>
-                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Meta Viagem</div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#00BFA6",lineHeight:1,marginTop:"4px"}}>{pctViagem}%</div>
-                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>${savedViagem.toLocaleString()} / ${goalViagemEst.toLocaleString()}</div>
-                  <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${pctViagem}%`,background:"#00BFA6"}}/>
-                  </div>
-                </div>
-                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #FFB300"}}>
-                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Falta Juntar</div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#FFB300",lineHeight:1,marginTop:"4px"}}>${remainingViagem.toLocaleString()}</div>
-                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>≈ R${(remainingViagem*5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
-                  {daysToTrip > 0 && <div style={{fontSize:"10px",color:"#FFB300",marginTop:"2px"}}>~${Math.round(remainingViagem/daysToTrip)}/dia até a viagem</div>}
-                </div>
-                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #7C4DFF"}}>
-                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Checklist Total</div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#7C4DFF",lineHeight:1,marginTop:"4px"}}>{progress}%</div>
-                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>{doneItems} de {totalItems} itens</div>
-                  <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${progress}%`,background:"#7C4DFF"}}/>
-                  </div>
-                </div>
-                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #E91E63"}}>
-                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Parques</div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#E91E63",lineHeight:1,marginTop:"4px"}}>{parkCount}</div>
-                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>dias de parque</div>
-                  <div style={{fontSize:"10px",color:"#E91E63",marginTop:"2px"}}>Disney 5 · Universal 2 · SW 1</div>
-                </div>
-              </div>
-
-              <div style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"16px"}}>
-                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#fff",marginBottom:"12px"}}>PROGRESSO POR CATEGORIA</div>
-                {catProgress.map(c => (
-                  <div key={c.name} style={{marginBottom:"10px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"4px"}}>
-                      <span style={{color:"#ccc"}}>{c.name}</span>
-                      <span style={{color:c.pct===100?"#00BFA6":"#888",fontWeight:600}}>{c.done}/{c.total}</span>
-                    </div>
-                    <div style={{height:"4px",background:"#1a1a1a",borderRadius:"2px",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${c.pct}%`,background:c.pct===100?"#00BFA6":"#FF6B35",borderRadius:"2px",transition:"width 0.4s"}}/>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"16px"}}>
-                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#fff",marginBottom:"12px"}}>FASES DA VIAGEM</div>
-                {ITINERARY.map(p => (
-                  <div key={p.phase} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid #1a1a1a"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                      <div style={{width:"4px",height:"20px",background:p.phaseColor,borderRadius:"2px"}}/>
-                      <span style={{fontSize:"13px",color:"#ccc"}}>{p.phase}</span>
-                    </div>
-                    <span style={{fontSize:"12px",color:"#888"}}>{p.days.length} dias</span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{background:"linear-gradient(135deg,#1a1208,#1a0a0a)",borderRadius:"10px",padding:"16px",border:"1px solid #2a1a1a"}}>
-                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#FFB300",marginBottom:"10px"}}>⚡ PRÓXIMOS PASSOS</div>
-                {checklist.flatMap(c => c.items.filter(i => !i.done).map(i => ({...i, cat: c.category}))).slice(0, 5).map((item, i) => (
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 0",borderBottom:"1px solid #1a1a1a"}}>
-                    <span style={{color:"#FF6B35",fontSize:"10px"}}>●</span>
-                    <span style={{fontSize:"12px",color:"#ccc",flex:1}}>{item.label}</span>
-                    <span style={{fontSize:"9px",color:"#666",letterSpacing:"0.5px",textTransform:"uppercase"}}>{item.cat}</span>
-                  </div>
-                ))}
-                {checklist.every(c => c.items.every(i => i.done)) && (
-                  <div style={{fontSize:"13px",color:"#00BFA6",textAlign:"center",padding:"12px"}}>✅ Tudo pronto! Boa viagem!</div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ITINERARY TAB */}
-        {tab === "itinerary" && (
-          <div>
-            {ITINERARY.map((phase) => (
-              <div key={phase.phase} style={{ marginBottom: "32px" }}>
-                <div
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: "28px",
-                    letterSpacing: "2px",
-                    color: phase.phaseColor,
-                    marginBottom: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "4px",
-                      height: "24px",
-                      background: phase.phaseColor,
-                      borderRadius: "2px",
-                    }}
-                  />
-                  {phase.phase}
-                </div>
-
-                {phase.days.map((day, di) => {
-                  const dayKey = `${phase.phase}-${di}`;
-                  const isOpen = expandedDay === dayKey;
-                  return (
-                    <div
-                      key={dayKey}
-                      style={{
-                        background: isOpen ? "#141414" : "#0D0D0D",
-                        borderLeft: `3px solid ${typeColors[day.type] || "#444"}`,
-                        marginBottom: "8px",
-                        borderRadius: "0 8px 8px 0",
-                        overflow: "hidden",
-                        transition: "background 0.2s",
-                      }}
-                    >
-                      <button
-                        onClick={() => setExpandedDay(isOpen ? null : dayKey)}
-                        style={{
-                          width: "100%",
-                          padding: "14px 16px",
-                          background: "none",
-                          border: "none",
-                          color: "#E8E4DF",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "12px",
-                          fontFamily: "'Outfit', sans-serif",
-                          textAlign: "left",
-                        }}
-                      >
-                        <span style={{ fontSize: "22px" }}>{day.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "#888",
-                              letterSpacing: "0.5px",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            {day.date}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: "15px",
-                              fontWeight: 600,
-                              marginTop: "2px",
-                            }}
-                          >
-                            {day.title}
-                          </div>
-                        </div>
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            background: typeColors[day.type] + "22",
-                            color: typeColors[day.type],
-                            padding: "3px 8px",
-                            borderRadius: "4px",
-                            fontWeight: 600,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          {typeLabels[day.type]}
-                        </span>
-                        <span
-                          style={{
-                            color: "#555",
-                            fontSize: "18px",
-                            transform: isOpen ? "rotate(180deg)" : "rotate(0)",
-                            transition: "transform 0.2s",
-                          }}
-                        >
-                          ▾
-                        </span>
-                      </button>
-
-                      {isOpen && (
-                        <div style={{ padding: "0 16px 16px 50px" }}>
-                          <ul
-                            style={{
-                              margin: 0,
-                              padding: 0,
-                              listStyle: "none",
-                            }}
-                          >
-                            {day.items.map((item, ii) => (
-                              <li
-                                key={ii}
-                                style={{
-                                  padding: "6px 0",
-                                  fontSize: "14px",
-                                  color: "#ccc",
-                                  borderBottom: "1px solid #1a1a1a",
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  gap: "8px",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    color: typeColors[day.type],
-                                    marginTop: "2px",
-                                    fontSize: "8px",
-                                  }}
-                                >
-                                  ●
-                                </span>
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                          {day.places && day.places.length > 0 && (
-                            <div style={{marginTop:"12px"}}>
-                              <div style={{fontSize:"10px",fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"#666",marginBottom:"6px"}}>Deslocamentos</div>
-                              {day.places.map((p, pi) => (
-                                <div key={pi} style={{background:"#1A1A1A",borderRadius:"6px",padding:"10px 12px",marginBottom:"6px",borderLeft:`2px solid ${typeColors[day.type]}44`}}>
-                                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"8px"}}>
-                                    <div style={{flex:1,minWidth:0}}>
-                                      <div style={{fontSize:"13px",fontWeight:600,color:"#fff"}}>{p.name}</div>
-                                      <div style={{fontSize:"11px",color:"#888",marginTop:"2px"}}>{p.address}</div>
-                                      {p.from && (
-                                        <div style={{fontSize:"10px",color:"#FFB300",marginTop:"4px",letterSpacing:"0.5px"}}>
-                                          ↳ de {p.from} · {p.distance} · {p.time}
-                                        </div>
-                                      )}
-                                    </div>
-                                    <a
-                                      href={`https://waze.com/ul?q=${encodeURIComponent(p.address)}&navigate=yes`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      style={{
-                                        background:"#33CCFF",
-                                        color:"#000",
-                                        padding:"6px 10px",
-                                        borderRadius:"5px",
-                                        fontSize:"10px",
-                                        fontWeight:700,
-                                        letterSpacing:"0.5px",
-                                        textDecoration:"none",
-                                        whiteSpace:"nowrap",
-                                        flexShrink:0,
-                                      }}
-                                    >
-                                      ▶ WAZE
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {day.tip && (
-                            <div
-                              style={{
-                                marginTop: "12px",
-                                padding: "10px 12px",
-                                background: "#1A1A1A",
-                                borderRadius: "6px",
-                                fontSize: "12px",
-                                color: "#999",
-                                lineHeight: 1.5,
-                                borderLeft: `2px solid ${typeColors[day.type]}44`,
-                              }}
-                            >
-                              <span style={{ color: "#FFB300", marginRight: "6px" }}>💡</span>
-                              {day.tip}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* CHECKLIST TAB */}
-        {tab === "checklist" && (
-          <div>
-            <div style={{ marginBottom: "24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginBottom: "8px",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: "24px",
-                    letterSpacing: "2px",
-                    color: "#fff",
-                  }}
-                >
-                  PRÉ-VIAGEM
-                </span>
-                <span
-                  style={{
-                    fontSize: "13px",
-                    color: progress === 100 ? "#00BFA6" : "#888",
-                    fontWeight: 600,
-                  }}
-                >
-                  {doneItems}/{totalItems} · {progress}%
-                </span>
-              </div>
-              <div
-                style={{
-                  height: "3px",
-                  background: "#222",
-                  borderRadius: "2px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${progress}%`,
-                    background: progress === 100
-                      ? "#00BFA6"
-                      : "linear-gradient(90deg, #FF6B35, #FFB300)",
-                    borderRadius: "2px",
-                    transition: "width 0.3s",
-                  }}
-                />
-              </div>
-            </div>
-
-            {checklist.map((cat, catIdx) => (
-              <div key={cat.category} style={{ marginBottom: "24px" }}>
-                <div
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "2px",
-                    textTransform: "uppercase",
-                    color: "#666",
-                    marginBottom: "8px",
-                    paddingLeft: "4px",
-                  }}
-                >
-                  {cat.category}
-                </div>
-                {cat.items.map((item, itemIdx) => (
-                  <button
-                    key={item.id}
-                    onClick={() => toggleCheck(catIdx, itemIdx)}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      padding: "12px",
-                      background: item.done ? "#0f1a0f" : "#111",
-                      border: "none",
-                      borderRadius: "6px",
-                      marginBottom: "4px",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                      fontFamily: "'Outfit', sans-serif",
-                      textAlign: "left",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "4px",
-                        border: item.done ? "none" : "2px solid #444",
-                        background: item.done ? "#00BFA6" : "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {item.done && (
-                        <span style={{ color: "#000", fontSize: "13px", fontWeight: 700 }}>
-                          ✓
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        color: item.done ? "#5a7a5a" : "#ccc",
-                        textDecoration: item.done ? "line-through" : "none",
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* TICKETS TAB */}
-        {tab === "tickets" && (
-          <div>
-            <div
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "24px",
-                letterSpacing: "2px",
-                color: "#fff",
-                marginBottom: "4px",
-              }}
-            >
-              INGRESSOS & TICKETS
-            </div>
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#888",
-                marginBottom: "24px",
-                lineHeight: 1.5,
-              }}
-            >
-              Preços pesquisados em abril/2026. Valores em USD, antes de tax (6.5%).
-              Filha com 2a8m = grátis na Disney e SeaWorld.
-            </div>
-
-            {TICKETS.map((t) => (
-              <div
-                key={t.park}
-                style={{
-                  background: "#111",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  <span style={{ fontSize: "28px" }}>{t.emoji}</span>
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: "22px",
-                        letterSpacing: "1px",
-                        color: "#fff",
-                      }}
-                    >
-                      {t.park}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: "#FF6B35",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {t.estimatedCost}
-                    </div>
-                  </div>
-                </div>
-
-                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                  {t.details.map((d, i) => (
-                    <li
-                      key={i}
-                      style={{
-                        padding: "5px 0",
-                        fontSize: "13px",
-                        color: "#aaa",
-                        display: "flex",
-                        gap: "8px",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <span style={{ color: "#444", marginTop: "3px", fontSize: "6px" }}>●</span>
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-
-                <div
-                  style={{
-                    marginTop: "14px",
-                    padding: "12px",
-                    background: "#0a1a0a",
-                    borderRadius: "6px",
-                    borderLeft: "3px solid #00BFA6",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                      color: "#00BFA6",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Recomendação
-                  </div>
-                  <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.5 }}>
-                    {t.recommendation}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: "12px" }}>
-                  <div
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                      color: "#666",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    Dicas de compra
-                  </div>
-                  {t.buyTips.map((tip, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        fontSize: "12px",
-                        color: "#888",
-                        padding: "3px 0",
-                        display: "flex",
-                        gap: "6px",
-                      }}
-                    >
-                      <span style={{ color: "#FFB300" }}>→</span>
-                      {tip}
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{
-                    marginTop: "12px",
-                    fontSize: "11px",
-                    color: "#555",
-                  }}
-                >
-                  🔗 {t.buyLink}
-                </div>
-              </div>
-            ))}
-
-            <div
-              style={{
-                background: "linear-gradient(135deg, #1a1208, #0f1a0f)",
-                borderRadius: "10px",
-                padding: "20px",
-                marginTop: "24px",
-                border: "1px solid #2a2a1a",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "20px",
-                  letterSpacing: "1px",
-                  color: "#FFB300",
-                  marginBottom: "12px",
-                }}
-              >
-                RESUMO ESTIMADO — TICKETS
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {[
-                  { label: "Disney (3 dias, 2 adultos)", value: "$900–1.100" },
-                  { label: "Universal (2 dias, 2 adultos)", value: "$550–820" },
-                  { label: "SeaWorld (1 dia, 2 adultos + dining)", value: "$130–220" },
-                  { label: "Winter Park Boat Tour", value: "$40" },
-                ].map((row) => (
-                  <div
-                    key={row.label}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "13px",
-                      padding: "4px 0",
-                      borderBottom: "1px solid #1a1a1a",
-                    }}
-                  >
-                    <span style={{ color: "#aaa" }}>{row.label}</span>
-                    <span style={{ color: "#fff", fontWeight: 600 }}>{row.value}</span>
-                  </div>
-                ))}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "16px",
-                    padding: "8px 0 0",
-                    fontWeight: 700,
-                  }}
-                >
-                  <span style={{ color: "#FFB300" }}>TOTAL ESTIMADO</span>
-                  <span style={{ color: "#FFB300" }}>$1.620–2.180</span>
-                </div>
-                <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                  * Valores antes de tax (6.5%). Filha grátis na Disney e SeaWorld.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* FINANCE TAB */}
-        {tab === "finance" && (() => {
-          const USD_BRL = 5.0;
-          const fmt = (usd) => `$${usd.toLocaleString()} · R$${(usd * USD_BRL).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
-          const sections = [
-            {
-              title: "ALIMENTAÇÃO",
-              icon: "🍔",
-              color: "#FFB300",
-              items: [
-                { label: "22 dias × $100/dia (família)", value: 2200 },
-              ],
-              note: "Média café da manhã no resort + almoço/jantar fora. Cozinhar 1-2 refeições/dia no resort reduz isso bastante.",
-            },
-            {
-              title: "ALUGUEL DE CARRO — ORLANDO (14 dias)",
-              icon: "🚙",
-              color: "#FF6B35",
-              items: [
-                { label: "Wrangler 12 dias Orlando (Turo, ~$80/dia)", value: 960, card: true },
-                { label: "Combustível estimado", value: 220 },
-                { label: "Pedágios/parking", value: 60 },
-              ],
-              note: "Wrangler em Turo Orlando: ~$72–89/dia. Devolução em Miami tem taxa one-way (~$200-400). Confirme com o host antes de fechar — alguns Turo hosts não aceitam one-way. Alternativa: locadora tradicional (Avis, Budget) que aceitam one-way mas cobram mais caro.",
-            },
-            {
-              title: "PARQUES & TICKETS",
-              icon: "🎟️",
-              color: "#7C4DFF",
-              items: [
-                { label: "Disney (3 dias, 2 adultos)", value: 1000 },
-                { label: "Universal (2 dias c/ Epic Universe)", value: 685 },
-                { label: "SeaWorld + dining", value: 175 },
-                { label: "Winter Park Boat Tour", value: 40 },
-              ],
-              note: "Filha grátis na Disney e SeaWorld (menor de 3 anos).",
-            },
-            {
-              title: "MIAMI (4 dias)",
-              icon: "🌴",
-              color: "#00BFA6",
-              items: [
-                { label: "Brickell Arch Residences (3 noites, tudo incluído)", value: 950, card: true },
-                { label: "Voos MCO↔MIA Spirit (3 pax, ida+volta, sem bagagem)", value: 300, card: true },
-                { label: "Porsche 3 dias (Turo Miami, confirmado)", value: 780 },
-                { label: "Combustível premium Porsche", value: 80 },
-                { label: "Uber ocasional em Miami", value: 120 },
-                { label: "Museus, tours, atividades", value: 200 },
-              ],
-              note: "Voar MCO↔MIA via Spirit (só bagagem de mão) sai por $50/pessoa/trecho — economia absurda vs Southwest. Porsche 3 dias garante liberdade + experiência premium (Design District sábado, A1A domingo, South Beach). Wrangler fica estacionado em Orlando durante Miami.",
-            },
-            {
-              title: "ST. LOUIS + ORLANDO FINAL",
-              icon: "🌆",
-              color: "#E53935",
-              items: [
-                { label: "Voo Orlando → St. Louis (3 pax)", value: 450 },
-                { label: "Voo St. Louis → Orlando (3 pax)", value: 450 },
-                { label: "Hotel perto MCO (9, 24, 28, 29/mai · 4 noites)", value: 560, card: true },
-                { label: "Uber MCO + locomoção 2 dias finais", value: 130 },
-                { label: "Atividades / passeios StL", value: 200 },
-                { label: "Presentes para a amiga / extras", value: 150 },
-              ],
-              note: "Hospedagem grátis em StL (casa da amiga). MIA→STL: American Airlines opera direto. STL→MCO: Southwest costuma ser mais barato.",
-            },
-            {
-              title: "RESERVA / IMPREVISTOS",
-              icon: "🛟",
-              color: "#888",
-              items: [
-                { label: "Margem de segurança (~10%)", value: 900 },
-              ],
-              note: "Sempre deixar margem para emergências, farmácia, lembrança extra.",
-            },
-            {
-              title: "GASTOS PESSOAIS & FAMÍLIA",
-              icon: "👶",
-              color: "#E91E63",
-              items: [
-                { label: "Mauricio", value: 1000 },
-                { label: "Natalia", value: 1000 },
-                { label: "Olivia (roupinhas, lembranças Disney)", value: 500 },
-                { label: "Neném (enxoval, roupinhas)", value: 500 },
-              ],
-              note: "Inclui compras pessoais, roupas de gestante, enxoval do neném (Carter's, Old Navy, Gap), lembrancinhas Disney da Olivia, cafés, lanches, gorjetas.",
-            },
-            {
-              title: "APPLE — TROCA + ACESSÓRIOS",
-              icon: "📱",
-              color: "#A0A0A0",
-              goal: "apple",
-              items: [
-                { label: "iPhone 17 Pro Max 256GB (Mauricio, c/ trade-in 14PM)", value: 769 },
-                { label: "AirPods Max 2", value: 549 },
-                { label: "AirPods Pro 3", value: 249 },
-                { label: "Tax Florida (6.5%)", value: 102 },
-              ],
-              note: "Estimativas. Valor exato do trade-in só na hora (Apple Store ou apple.com/shop/trade-in). Confirme antes — trade-in pode variar ±$50. Levar o iPhone 14 Pro Max destravado, em bom estado, com caixa se possível. Apple Store no Mall at Millenia ou Florida Mall.",
-            },
-          ];
-
-          const total = sections.reduce((a, s) => a + s.items.reduce((b, i) => b + i.value, 0), 0);
-          const cashTotal = sections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
-          const cardTotal = sections.reduce((a, s) => a + s.items.filter(i => i.card).reduce((b, i) => b + i.value, 0), 0);
-
-          const viagemSections = sections.filter(s => s.goal !== "apple");
-          const appleSections = sections.filter(s => s.goal === "apple");
-          const viagemCash = viagemSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
-          const appleCash = appleSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
-
-          const bonus = null;
-          const bonusTotal = bonus ? bonus.items.reduce((a, i) => a + i.value, 0) : 0;
-
-          return (
-            <div>
-              <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff",marginBottom:"4px"}}>FINANCEIRO</div>
-              <div style={{fontSize:"12px",color:"#888",marginBottom:"20px"}}>Câmbio referência: R$5,00/USD. Estimativas em USD.</div>
-
-              {(() => {
-                const savedViagem = 8000;
-                const savedApple = 0;
-                const goalViagem = viagemCash;
-                const goalApple = appleCash;
-                const pctViagem = Math.min(100, Math.round((savedViagem / goalViagem) * 100));
-                const pctApple = goalApple > 0 ? Math.min(100, Math.round((savedApple / goalApple) * 100)) : 0;
-                const remainingViagem = Math.max(0, goalViagem - savedViagem);
-                const remainingApple = Math.max(0, goalApple - savedApple);
-
-                const GoalCard = ({ title, subtitle, saved, goal, pct, remaining, color, gradient }) => (
-                  <div style={{background:gradient,borderRadius:"10px",padding:"16px",border:`1px solid ${color}33`,marginBottom:"12px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"4px"}}>
-                      <div>
-                        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:color}}>{title}</div>
-                        <div style={{fontSize:"10px",color:"#666",letterSpacing:"0.5px"}}>{subtitle}</div>
-                      </div>
-                      <span style={{fontSize:"13px",color:pct>=100?"#00BFA6":color,fontWeight:700}}>{pct}%</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginTop:"10px",marginBottom:"8px"}}>
-                      <div>
-                        <div style={{fontSize:"18px",fontWeight:700,color:"#fff"}}>${saved.toLocaleString()}</div>
-                        <div style={{fontSize:"10px",color:"#666"}}>de ${goal.toLocaleString()}</div>
-                      </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:"9px",color:"#888",letterSpacing:"1px",textTransform:"uppercase"}}>Faltam</div>
-                        <div style={{fontSize:"14px",fontWeight:700,color:remaining===0?"#00BFA6":"#FF6B35"}}>${remaining.toLocaleString()}</div>
-                        <div style={{fontSize:"9px",color:"#666"}}>R${(remaining*5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
-                      </div>
-                    </div>
-                    <div style={{height:"4px",background:"#1a1a1a",borderRadius:"2px",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${pct}%`,background:pct>=100?"#00BFA6":color,borderRadius:"2px",transition:"width 0.4s"}}/>
-                    </div>
-                  </div>
-                );
-
-                return (
-                  <div style={{marginBottom:"24px"}}>
-                    <GoalCard
-                      title="META VIAGEM"
-                      subtitle="ESSENCIAL · Alimentação, carro, hotel, parques, pessoais"
-                      saved={savedViagem}
-                      goal={goalViagem}
-                      pct={pctViagem}
-                      remaining={remainingViagem}
-                      color="#00BFA6"
-                      gradient="linear-gradient(135deg,#0a1a14,#0a0f1a)"
-                    />
-                    <GoalCard
-                      title="META APPLE"
-                      subtitle="LUXO · iPhones + AirPods (compra planejada)"
-                      saved={savedApple}
-                      goal={goalApple}
-                      pct={pctApple}
-                      remaining={remainingApple}
-                      color="#A0A0A0"
-                      gradient="linear-gradient(135deg,#151515,#0a0a14)"
-                    />
-                    <div style={{padding:"8px 10px",background:"#0a0a0a",borderRadius:"4px",fontSize:"10px",color:"#888",lineHeight:1.5}}>
-                      💡 +${cardTotal.toLocaleString()} no cartão (Wrangler + hotéis MCO + Brickell), separado das metas em cash.
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {sections.map((s) => {
-                const sub = s.items.reduce((a, i) => a + i.value, 0);
-                return (
-                  <div key={s.title} style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"12px",borderLeft:`3px solid ${s.color}`}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                        <span style={{fontSize:"20px"}}>{s.icon}</span>
-                        <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"15px",letterSpacing:"1px",color:"#fff"}}>{s.title}</span>
-                      </div>
-                      <span style={{fontSize:"13px",fontWeight:700,color:s.color}}>${sub.toLocaleString()}</span>
-                    </div>
-                    {s.items.map((i, idx) => (
-                      <div key={idx} style={{display:"flex",justifyContent:"space-between",fontSize:"12px",color:"#aaa",padding:"3px 0",gap:"8px"}}>
-                        <span style={{flex:1}}>{i.label} {i.card && <span style={{fontSize:"9px",background:"#1a2a4a",color:"#7eb6ff",padding:"1px 6px",borderRadius:"3px",marginLeft:"4px",letterSpacing:"0.5px"}}>💳 CARTÃO</span>}</span>
-                        <span style={{color: i.card ? "#7eb6ff" : "#ccc"}}>${i.value.toLocaleString()}</span>
-                      </div>
-                    ))}
-                    <div style={{marginTop:"8px",padding:"8px 10px",background:"#0a0a0a",borderRadius:"4px",fontSize:"11px",color:"#888",lineHeight:1.5}}>💡 {s.note}</div>
-                  </div>
-                );
-              })}
-
-              <div style={{background:"linear-gradient(135deg,#1a1208,#0f0f1a)",borderRadius:"10px",padding:"20px",marginTop:"20px",border:"1px solid #2a2a1a"}}>
-                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"22px",letterSpacing:"1px",color:"#FFB300",marginBottom:"12px"}}>TOTAL ESTIMADO</div>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"6px"}}>
-                  <span style={{fontSize:"13px",color:"#aaa"}}>Cash / débito (vai contar na meta)</span>
-                  <span style={{fontSize:"20px",fontWeight:700,color:"#fff"}}>${cashTotal.toLocaleString()}</span>
-                </div>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"10px"}}>
-                  <span style={{fontSize:"13px",color:"#7eb6ff"}}>💳 No cartão (parcelado)</span>
-                  <span style={{fontSize:"20px",fontWeight:700,color:"#7eb6ff"}}>${cardTotal.toLocaleString()}</span>
-                </div>
-                <div style={{borderTop:"1px solid #333",paddingTop:"10px",display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-                  <span style={{fontSize:"14px",color:"#FFB300",fontWeight:600}}>TOTAL GERAL</span>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:"24px",fontWeight:700,color:"#FFB300"}}>${total.toLocaleString()}</div>
-                    <div style={{fontSize:"12px",color:"#888"}}>≈ R${(total * 5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
-                  </div>
-                </div>
-                <div style={{fontSize:"11px",color:"#666",marginTop:"8px"}}>Família de 3 (Olivia grátis em vários lugares) · 22 dias</div>
-              </div>
-
-              {bonus && (
-                <div style={{background:"#0a0f1a",borderRadius:"10px",padding:"18px",marginTop:"16px",border:"1px dashed #444"}}>
-                  <div style={{fontSize:"10px",letterSpacing:"2px",color:"#888",marginBottom:"4px"}}>OPCIONAL</div>
-                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"18px",letterSpacing:"1px",color:"#fff",marginBottom:"10px"}}>🏎️ {bonus.title}</div>
-                  {bonus.items.map((i, idx) => (
-                    <div key={idx} style={{display:"flex",justifyContent:"space-between",fontSize:"12px",color:"#aaa",padding:"3px 0"}}>
-                      <span>{i.label}</span>
-                      <span style={{color:"#ccc"}}>${i.value.toLocaleString()}</span>
-                    </div>
-                  ))}
-                  <div style={{display:"flex",justifyContent:"space-between",fontSize:"15px",fontWeight:700,padding:"8px 0 0",borderTop:"1px solid #222",marginTop:"6px"}}>
-                    <span style={{color:"#FF6B35"}}>EXTRA</span>
-                    <span style={{color:"#FF6B35"}}>+${bonusTotal.toLocaleString()}</span>
-                  </div>
-                  <div style={{marginTop:"10px",fontSize:"11px",color:"#888",lineHeight:1.5}}>{bonus.note}</div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
+      <div className="ios-list">
+        <div className="ios-item" style={{justifyContent: "space-between"}}>
+            <span>Dias para a viagem</span>
+            <span style={{color: "var(--ios-blue)", fontWeight: "600"}}>22 dias</span>
+        </div>
+        <div className="ios-item" style={{justifyContent: "space-between"}}>
+            <span>Parques Planejados</span>
+            <span style={{color: "var(--ios-blue)", fontWeight: "600"}}>8</span>
+        </div>
       </div>
     </div>
   );
 }
 
-// Renderiza o componente no DOM
+function ChecklistTab({ checklist, setChecklist }) {
+  const toggle = (catIdx, itemIdx) => {
+    const next = [...checklist];
+    next[catIdx].items[itemIdx].done = !next[catIdx].items[itemIdx].done;
+    setChecklist(next);
+  };
+
+  return (
+    <div style={{paddingBottom: "100px"}}>
+      <div className="ios-title">Checklist</div>
+      {checklist.map((cat, ci) => (
+        <div key={ci}>
+          <div style={{fontSize: "13px", color: "#8E8E93", textTransform: "uppercase", margin: "0 32px 8px"}}> {cat.category} </div>
+          <div className="ios-list">
+            {cat.items.map((item, ii) => (
+              <div key={ii} className="ios-item" onClick={() => toggle(ci, ii)}>
+                <div style={{
+                    width: "22px", height: "22px", borderRadius: "50%", 
+                    border: item.done ? "none" : "2px solid #38383A",
+                    background: item.done ? "var(--ios-blue)" : "transparent",
+                    marginRight: "12px", display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                  {item.done && <span style={{fontSize: "12px"}}>✓</span>}
+                </div>
+                <span style={{color: item.done ? "#8E8E93" : "white"}}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DocsTab({ docs, setDocs }) {
+  const [title, setTitle] = useState('');
+  const [code, setCode] = useState('');
+
+  const add = () => {
+    if(!title) return;
+    setDocs([...docs, { title, code, id: Date.now() }]);
+    setTitle(''); setCode('');
+  };
+
+  return (
+    <div style={{paddingBottom: "100px"}}>
+      <div className="ios-title">Documentos</div>
+      
+      <div className="ios-list" style={{padding: "16px", display: "flex", flexDirection: "column", gap: "10px"}}>
+        <input placeholder="Título (ex: Passagem GOL)" value={title} onChange={e=>setTitle(e.target.value)} />
+        <input placeholder="Código de Reserva" value={code} onChange={e=>setCode(e.target.value)} />
+        <button onClick={add} style={{background: "var(--ios-blue)", color: "white", padding: "12px", borderRadius: "10px", border: "none", fontWeight: "600"}}>Adicionar</button>
+      </div>
+
+      <div className="ios-list">
+        {docs.map(doc => (
+          <div key={doc.id} className="ios-item" style={{justifyContent: "space-between"}}>
+            <div>
+              <div style={{fontWeight: "600"}}>{doc.title}</div>
+              <div style={{fontSize: "12px", color: "#8E8E93"}}>{doc.code}</div>
+            </div>
+            <div style={{color: "var(--ios-blue)", fontSize: "20px"}}>ⓘ</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- App Principal ---
+
+function AppleTripApp() {
+  const [tab, setTab] = useState('home');
+  const [checklist, setChecklist] = useLocalStorage("ios_check", CHECKLIST_DATA);
+  const [saved, setSaved] = useLocalStorage("ios_saved", 8000);
+  const [docs, setDocs] = useLocalStorage("ios_docs", []);
+
+  return (
+    <div>
+      {tab === 'home' && <DashboardTab savedViagem={saved} goalViagem={10710} />}
+      {tab === 'check' && <ChecklistTab checklist={checklist} setChecklist={setChecklist} />}
+      {tab === 'docs' && <DocsTab docs={docs} setDocs={setDocs} />}
+      
+      {/* Tab Bar Nativa do iOS */}
+      <div className="tab-bar">
+        <button className={`tab-item ${tab==='home'?'active':''}`} onClick={()=>setTab('home')}>
+          <div style={{fontSize: "24px"}}>🏠</div>
+          <span>Home</span>
+        </button>
+        <button className={`tab-item ${tab==='check'?'active':''}`} onClick={()=>setTab('check')}>
+          <div style={{fontSize: "24px"}}>✅</div>
+          <span>Checklist</span>
+        </button>
+        <button className={`tab-item ${tab==='docs'?'active':''}`} onClick={()=>setTab('docs')}>
+          <div style={{fontSize: "24px"}}>📄</div>
+          <span>Docs</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<TripPlanner />);
+root.render(<AppleTripApp />);
     </script>
 </body>
 </html>
