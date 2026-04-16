@@ -2,8 +2,12 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>USA 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>USA 2026 Pro</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="USA 2026">
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,213 +15,195 @@
     
     <style>
         :root {
-            --ios-blue: #0A84FF;
-            --ios-green: #30D158;
+            --ios-blue: #007AFF;
             --ios-bg: #000000;
-            --ios-secondary-bg: #1C1C1E;
-            --ios-tertiary-bg: #2C2C2E;
-            --ios-label: #FFFFFF;
-            --ios-secondary-label: #8E8E93;
+            --ios-card: #1C1C1E;
+            --ios-text: #FFFFFF;
+            --ios-secondary-text: #8E8E93;
             --ios-separator: #38383A;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--ios-bg);
-            color: var(--ios-label);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--ios-text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
-            overscroll-behavior-y: none;
+            overflow-x: hidden;
         }
 
-        /* Estilo Inset Grouped da Apple */
-        .ios-list {
-            background: var(--ios-secondary-bg);
-            border-radius: 12px;
-            margin: 0 16px 20px 16px;
-            overflow: hidden;
-        }
+        /* Layout Estrutural */
+        .app-container { padding-bottom: calc(90px + var(--safe-area-bottom)); }
+        .content-padding { padding: 0 16px; }
 
-        .ios-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 0.5px solid var(--ios-separator);
-            transition: background 0.2s;
-        }
-
-        .ios-item:last-child { border-bottom: none; }
-
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 84px;
-            background: rgba(20, 20, 20, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: space-around;
-            padding-top: 8px;
-            border-top: 0.5px solid var(--ios-separator);
-            z-index: 100;
-        }
-
-        .tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--ios-secondary-label);
-            text-decoration: none;
-            font-size: 10px;
-            font-weight: 500;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .tab-item.active { color: var(--ios-blue); }
-
-        .ios-title {
+        /* Títulos Apple Style */
+        .large-title {
             font-size: 34px;
             font-weight: 700;
-            padding: 40px 16px 10px 16px;
+            padding: calc(40px + var(--safe-area-top)) 16px 10px;
             letter-spacing: -1px;
         }
 
-        input, select {
-            background: var(--ios-tertiary-bg);
-            border: none;
-            color: white;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 16px;
+        /* Cartões Inset Grouped */
+        .ios-card {
+            background: var(--ios-card);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
         }
+
+        .ios-row {
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--ios-separator);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ios-row:last-child { border-bottom: none; }
+
+        /* Navegação Inferior */
+        .tab-bar {
+            position: fixed; bottom: 0; width: 100%;
+            height: calc(65px + var(--safe-area-bottom));
+            background: rgba(25, 25, 25, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex; justify-content: space-around;
+            padding-top: 10px;
+            border-top: 0.5px solid var(--ios-separator);
+            z-index: 1000;
+        }
+
+        .tab-item {
+            background: none; border: none; color: var(--ios-secondary-text);
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 10px; font-weight: 500; cursor: pointer;
+        }
+        .tab-item.active { color: var(--ios-blue); }
+        .tab-icon { font-size: 22px; margin-bottom: 4px; }
+
+        /* Botão Apple */
+        .ios-button {
+            background: var(--ios-blue);
+            color: white; border: none;
+            padding: 14px; border-radius: 12px;
+            font-weight: 600; width: 100%; font-size: 16px;
+        }
+
+        /* Animação suave */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo } = React;
 
-// --- Reaproveitando lógica de LocalStorage do modelo anterior ---
+// --- DADOS DO ROTEIRO COMPLETO (Sua base original) ---
+const ORIGINAL_ITINERARY = [
+  {
+    phase: "Orlando · Fase 1", color: "#FF9500",
+    days: [
+      { date: "09/mai (sáb)", title: "Chegada em Orlando", icon: "✈️", type: "travel", items: ["Chegada MCO 17:30", "Pegar Wrangler (Turo)", "Supermercado Walmart"], tip: "Primeira noite perto do aeroporto." },
+      { date: "10/mai (dom)", title: "SeaWorld Orlando", icon: "🐬", type: "park", items: ["Check-in Vacation Village", "Shows: Orca e Dolphin", "Sesame Street Land"], tip: "Olivia entra grátis!" },
+      { date: "11/mai (seg)", title: "Magic Kingdom", icon: "🏰", type: "park", items: ["Foco: Fantasyland", "Almoço Columbia Harbour", "Show de Fogos"], tip: "Levem o carrinho reclinável." },
+      { date: "12/mai (ter)", title: "Descanso + Outlets", icon: "🛍️", type: "rest", items: ["Piscina Resort", "Vineland Premium Outlets"], tip: "Aproveite os cupons no app Simon." },
+      { date: "13/mai (qua)", title: "Animal Kingdom", icon: "🦁", type: "park", items: ["Safári bem cedo", "Na'vi River Journey", "Festival of the Lion King"] },
+      { date: "14/mai (qui)", title: "EPCOT", icon: "🌍", type: "park", items: ["Guardians of the Galaxy", "World Showcase", "Show Luminous"] },
+      { date: "15/mai (sex)", title: "Universal Studios", icon: "⚡", type: "park", items: ["Diagon Alley", "Hogwarts Express", "Hogsmeade"] },
+      { date: "16/mai (sáb)", title: "Cars & Coffee", icon: "🏎️", type: "rest", items: ["8:00 House Blend Cafe", "Disney Springs tarde"] },
+      { date: "18/mai (seg)", title: "Universal Epic Universe", icon: "🍄", type: "park", items: ["Super Nintendo World", "Isle of Berk", "Dark Universe"] },
+      { date: "19/mai (ter)", title: "Hollywood Studios", icon: "🎬", type: "park", items: ["Star Wars: Galaxy's Edge", "Toy Story Land"] }
+    ]
+  },
+  {
+    phase: "Miami", color: "#30D158",
+    days: [
+      { date: "21/mai (qui)", title: "Voo p/ Miami + Wynwood", icon: "🏎️", type: "travel", items: ["Voo MCO-MIA Spirit", "Pegar Porsche Turo", "Wynwood Walls"] },
+      { date: "22/mai (sex)", title: "Art Deco + South Beach", icon: "🏖️", type: "culture", items: ["Walking Tour South Beach", "Lincoln Road Mall"] }
+    ]
+  }
+];
+
+// --- LOGICA DE PERSISTÊNCIA ---
 function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch (error) { return initialValue; }
+    } catch (e) { return initialValue; }
   });
   useEffect(() => { window.localStorage.setItem(key, JSON.stringify(storedValue)); }, [key, storedValue]);
   return [storedValue, setStoredValue];
 }
 
-// --- Dados de estrutura mantidos conforme arquivo original ---
-const CHECKLIST_DATA = [
-  { category: "Documentação", items: [{ id: "passaportes", label: "Passaportes válidos", done: false }, { id: "visto", label: "Vistos americanos", done: false }, { id: "seguro", label: "Seguro viagem", done: false }] },
-  { category: "Transporte", items: [{ id: "passagens", label: "Passagens aéreas", done: true }, { id: "aluguel_carro", label: "Aluguel de carro", done: false }] }
-];
+// --- COMPONENTES DE ABA ---
 
-const ITINERARY = [
-  { phase: "Orlando", color: "#FF9500", days: [{ date: "09/mai", title: "Chegada", icon: "✈️", type: "travel" }, { date: "10/mai", title: "SeaWorld", icon: "🐬", type: "park" }] },
-  { phase: "Miami", color: "#30D158", days: [{ date: "21/mai", title: "Wynwood", icon: "🎨", type: "culture" }] }
-];
-
-// --- Componentes de Aba Estilo Apple ---
-
-function DashboardTab({ savedViagem, goalViagem }) {
-  const pct = Math.min(100, Math.round((savedViagem / goalViagem) * 100));
-  return (
-    <div style={{paddingBottom: "100px"}}>
-      <div className="ios-title">Resumo</div>
-      
-      <div className="ios-list" style={{padding: "20px", background: "linear-gradient(180deg, #1C1C1E 0%, #000 100%)", border: "1px solid #2C2C2E"}}>
-        <div style={{fontSize: "13px", color: "#8E8E93", textTransform: "uppercase", fontWeight: "600"}}>Meta de Economia</div>
-        <div style={{fontSize: "34px", fontWeight: "800", margin: "8px 0"}}>${savedViagem.toLocaleString()}</div>
-        <div style={{height: "8px", background: "#38383A", borderRadius: "4px", overflow: "hidden"}}>
-            <div style={{height: "100%", width: `${pct}%`, background: "var(--ios-blue)", borderRadius: "4px"}} />
-        </div>
-        <div style={{fontSize: "13px", color: "#8E8E93", marginTop: "8px"}}>{pct}% da meta de ${goalViagem.toLocaleString()}</div>
-      </div>
-
-      <div className="ios-list">
-        <div className="ios-item" style={{justifyContent: "space-between"}}>
-            <span>Dias para a viagem</span>
-            <span style={{color: "var(--ios-blue)", fontWeight: "600"}}>22 dias</span>
-        </div>
-        <div className="ios-item" style={{justifyContent: "space-between"}}>
-            <span>Parques Planejados</span>
-            <span style={{color: "var(--ios-blue)", fontWeight: "600"}}>8</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ChecklistTab({ checklist, setChecklist }) {
-  const toggle = (catIdx, itemIdx) => {
-    const next = [...checklist];
-    next[catIdx].items[itemIdx].done = !next[catIdx].items[itemIdx].done;
-    setChecklist(next);
-  };
+function TodayView({ itinerary }) {
+  // Simulação de detecção de data (ou manual para teste)
+  const todayStr = "11/mai (seg)"; 
+  const currentDay = useMemo(() => {
+    return itinerary.flatMap(p => p.days).find(d => d.date.includes(todayStr));
+  }, [itinerary]);
 
   return (
-    <div style={{paddingBottom: "100px"}}>
-      <div className="ios-title">Checklist</div>
-      {checklist.map((cat, ci) => (
-        <div key={ci}>
-          <div style={{fontSize: "13px", color: "#8E8E93", textTransform: "uppercase", margin: "0 32px 8px"}}> {cat.category} </div>
-          <div className="ios-list">
-            {cat.items.map((item, ii) => (
-              <div key={ii} className="ios-item" onClick={() => toggle(ci, ii)}>
-                <div style={{
-                    width: "22px", height: "22px", borderRadius: "50%", 
-                    border: item.done ? "none" : "2px solid #38383A",
-                    background: item.done ? "var(--ios-blue)" : "transparent",
-                    marginRight: "12px", display: "flex", alignItems: "center", justifyContent: "center"
-                }}>
-                  {item.done && <span style={{fontSize: "12px"}}>✓</span>}
-                </div>
-                <span style={{color: item.done ? "#8E8E93" : "white"}}>{item.label}</span>
+    <div className="fade-in">
+      <div className="large-title">Hoje</div>
+      <div className="content-padding">
+        {currentDay ? (
+          <div className="ios-card">
+            <div className="ios-row">
+              <span style={{fontSize: '24px'}}>{currentDay.icon}</span>
+              <div style={{flex: 1, marginLeft: '12px'}}>
+                <div style={{fontWeight: '700', fontSize: '18px'}}>{currentDay.title}</div>
+                <div style={{color: 'var(--ios-secondary-text)', fontSize: '14px'}}>{currentDay.date}</div>
+              </div>
+            </div>
+            {currentDay.items.map((item, i) => (
+              <div key={i} className="ios-row" style={{justifyContent: 'flex-start', fontSize: '15px'}}>
+                <span style={{color: 'var(--ios-blue)', marginRight: '10px'}}>•</span> {item}
               </div>
             ))}
+            <div style={{padding: '12px 16px', background: '#2C2C2E', fontSize: '13px', color: '#FFD60A'}}>
+              💡 {currentDay.tip}
+            </div>
           </div>
-        </div>
-      ))}
+        ) : (
+          <div className="ios-card" style={{padding: '20px', textAlign: 'center', color: '#8E8E93'}}>
+            Nenhuma atividade programada para hoje. Aproveite o descanso!
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function DocsTab({ docs, setDocs }) {
-  const [title, setTitle] = useState('');
-  const [code, setCode] = useState('');
-
-  const add = () => {
-    if(!title) return;
-    setDocs([...docs, { title, code, id: Date.now() }]);
-    setTitle(''); setCode('');
-  };
-
+function ItineraryView({ itinerary }) {
   return (
-    <div style={{paddingBottom: "100px"}}>
-      <div className="ios-title">Documentos</div>
-      
-      <div className="ios-list" style={{padding: "16px", display: "flex", flexDirection: "column", gap: "10px"}}>
-        <input placeholder="Título (ex: Passagem GOL)" value={title} onChange={e=>setTitle(e.target.value)} />
-        <input placeholder="Código de Reserva" value={code} onChange={e=>setCode(e.target.value)} />
-        <button onClick={add} style={{background: "var(--ios-blue)", color: "white", padding: "12px", borderRadius: "10px", border: "none", fontWeight: "600"}}>Adicionar</button>
-      </div>
-
-      <div className="ios-list">
-        {docs.map(doc => (
-          <div key={doc.id} className="ios-item" style={{justifyContent: "space-between"}}>
-            <div>
-              <div style={{fontWeight: "600"}}>{doc.title}</div>
-              <div style={{fontSize: "12px", color: "#8E8E93"}}>{doc.code}</div>
+    <div className="fade-in">
+      <div className="large-title">Roteiro</div>
+      <div className="content-padding">
+        {itinerary.map((phase, pi) => (
+          <div key={pi}>
+            <div style={{color: phase.color, fontWeight: '700', fontSize: '13px', margin: '0 0 8px 4px', textTransform: 'uppercase'}}>{phase.phase}</div>
+            <div className="ios-card">
+              {phase.days.map((day, di) => (
+                <div key={di} className="ios-row">
+                  <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span style={{fontSize: '20px', marginRight: '12px'}}>{day.icon}</span>
+                    <div>
+                      <div style={{fontSize: '15px', fontWeight: '600'}}>{day.title}</div>
+                      <div style={{fontSize: '12px', color: '#8E8E93'}}>{day.date}</div>
+                    </div>
+                  </div>
+                  <div style={{fontSize: '18px', color: '#38383A'}}>›</div>
+                </div>
+              ))}
             </div>
-            <div style={{color: "var(--ios-blue)", fontSize: "20px"}}>ⓘ</div>
           </div>
         ))}
       </div>
@@ -225,35 +211,110 @@ function DocsTab({ docs, setDocs }) {
   );
 }
 
-// --- App Principal ---
+function FinanceView({ saved, setSaved, totalGoal }) {
+  const pct = Math.round((saved / totalGoal) * 100);
+  return (
+    <div className="fade-in">
+      <div className="large-title">Finanças</div>
+      <div className="content-padding">
+        <div className="ios-card" style={{padding: '20px', background: 'linear-gradient(180deg, #1C1C1E 0%, #000 100%)'}}>
+          <div style={{color: '#8E8E93', fontSize: '12px', fontWeight: '600'}}>TOTAL ECONOMIZADO</div>
+          <div style={{fontSize: '36px', fontWeight: '800', margin: '8px 0'}}>${saved.toLocaleString()}</div>
+          <div style={{height: '8px', background: '#38383A', borderRadius: '4px', overflow: 'hidden'}}>
+            <div style={{width: `${pct}%`, height: '100%', background: 'var(--ios-blue)'}} />
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '12px', color: '#8E8E93'}}>
+            <span>{pct}% da meta</span>
+            <span>Faltam ${(totalGoal - saved).toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div style={{fontSize: '13px', color: '#8E8E93', margin: '0 4px 8px'}}>LANÇAR ECONOMIA</div>
+        <div className="ios-card" style={{padding: '16px'}}>
+          <input 
+            type="number" 
+            placeholder="Valor em USD"
+            style={{width: '100%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', fontSize: '16px'}}
+            onKeyDown={(e) => {
+              if(e.key === 'Enter') {
+                setSaved(prev => prev + Number(e.target.value));
+                e.target.value = '';
+              }
+            }}
+          />
+          <div style={{fontSize: '11px', color: '#444', marginTop: '8px', textAlign: 'center'}}>Pressione Enter para somar ao total</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DocsView({ docs, setDocs }) {
+  const [newDoc, setNewDoc] = useState({ title: '', code: '' });
+  return (
+    <div className="fade-in">
+      <div className="large-title">Docs</div>
+      <div className="content-padding">
+        <div className="ios-card" style={{padding: '16px'}}>
+          <input placeholder="Título (ex: Voo Spirit)" style={{width: '93%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', marginBottom: '10px'}} onChange={e=>setNewDoc({...newDoc, title: e.target.value})} />
+          <input placeholder="Confirmação / Código" style={{width: '93%', background: '#2C2C2E', border: 'none', padding: '12px', borderRadius: '8px', color: 'white', marginBottom: '10px'}} onChange={e=>setNewDoc({...newDoc, code: e.target.value})} />
+          <button className="ios-button" onClick={() => {
+            if(newDoc.title) { setDocs([...docs, {...newDoc, id: Date.now()}]); setNewDoc({title:'', code:''}); }
+          }}>Salvar Documento</button>
+        </div>
+
+        {docs.length > 0 && (
+          <div className="ios-card">
+            {docs.map(doc => (
+              <div key={doc.id} className="ios-row">
+                <div>
+                  <div style={{fontWeight: '600'}}>{doc.title}</div>
+                  <div style={{fontSize: '12px', color: '#8E8E93'}}>{doc.code}</div>
+                </div>
+                <button style={{background: 'none', border: 'none', color: '#FF453A'}} onClick={() => setDocs(docs.filter(d=>d.id!==doc.id))}>Remover</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- APP PRINCIPAL ---
 
 function AppleTripApp() {
-  const [tab, setTab] = useState('home');
-  const [checklist, setChecklist] = useLocalStorage("ios_check", CHECKLIST_DATA);
-  const [saved, setSaved] = useLocalStorage("ios_saved", 8000);
-  const [docs, setDocs] = useLocalStorage("ios_docs", []);
-
+  const [tab, setTab] = useState('today');
+  
+  // Dados persistentes
+  const [saved, setSaved] = useLocalStorage("usa2026_saved", 8000);
+  const [docs, setDocs] = useLocalStorage("usa2026_docs", []);
+  
   return (
-    <div>
-      {tab === 'home' && <DashboardTab savedViagem={saved} goalViagem={10710} />}
-      {tab === 'check' && <ChecklistTab checklist={checklist} setChecklist={setChecklist} />}
-      {tab === 'docs' && <DocsTab docs={docs} setDocs={setDocs} />}
-      
-      {/* Tab Bar Nativa do iOS */}
-      <div className="tab-bar">
-        <button className={`tab-item ${tab==='home'?'active':''}`} onClick={()=>setTab('home')}>
-          <div style={{fontSize: "24px"}}>🏠</div>
-          <span>Home</span>
+    <div className="app-container">
+      {tab === 'today' && <TodayView itinerary={ORIGINAL_ITINERARY} />}
+      {tab === 'itinerary' && <ItineraryView itinerary={ORIGINAL_ITINERARY} />}
+      {tab === 'finance' && <FinanceView saved={saved} setSaved={setSaved} totalGoal={10710} />}
+      {tab === 'docs' && <DocsView docs={docs} setDocs={setDocs} />}
+
+      <nav className="tab-bar">
+        <button className={`tab-item ${tab==='today'?'active':''}`} onClick={()=>setTab('today')}>
+          <span className="tab-icon">􀉉</span>
+          <span>Hoje</span>
         </button>
-        <button className={`tab-item ${tab==='check'?'active':''}`} onClick={()=>setTab('check')}>
-          <div style={{fontSize: "24px"}}>✅</div>
-          <span>Checklist</span>
+        <button className={`tab-item ${tab==='itinerary'?'active':''}`} onClick={()=>setTab('itinerary')}>
+          <span className="tab-icon">􀈟</span>
+          <span>Roteiro</span>
+        </button>
+        <button className={`tab-item ${tab==='finance'?'active':''}`} onClick={()=>setTab('finance')}>
+          <span className="tab-icon">􀖀</span>
+          <span>Finanças</span>
         </button>
         <button className={`tab-item ${tab==='docs'?'active':''}`} onClick={()=>setTab('docs')}>
-          <div style={{fontSize: "24px"}}>📄</div>
+          <span className="tab-icon">􀈦</span>
           <span>Docs</span>
         </button>
-      </div>
+      </nav>
     </div>
   );
 }
