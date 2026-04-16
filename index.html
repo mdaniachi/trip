@@ -1,1015 +1,1573 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>US Trip — Mai 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-:root {
-  --bg: #0a0a0b;
-  --surface: #141416;
-  --surface2: #1c1c1f;
-  --surface3: #242428;
-  --border: #2a2a2f;
-  --text: #e8e6e3;
-  --text2: #9a9590;
-  --accent: #e85d26;
-  --accent2: #ff7a45;
-  --green: #34d399;
-  --blue: #60a5fa;
-  --purple: #a78bfa;
-  --yellow: #fbbf24;
-  --red: #f87171;
-  --pink: #f472b6;
-}
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-.app { max-width: 720px; margin: 0 auto; padding: 16px; }
-
-/* Header */
-.header {
-  padding: 32px 0 24px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-.header h1 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
-}
-.header .sub {
-  color: var(--text2);
-  font-size: 13px;
-  font-weight: 300;
-}
-.header .sub span { color: var(--accent); font-weight: 500; }
-
-/* Trip Overview Cards */
-.overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-.ov-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  text-align: center;
-}
-.ov-card .ov-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text2); margin-bottom: 6px; }
-.ov-card .ov-val { font-family: 'DM Serif Display', serif; font-size: 20px; }
-.ov-card .ov-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 4px;
-  background: var(--surface);
-  border-radius: 10px;
-  padding: 4px;
-  margin-bottom: 24px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.tab {
-  flex: 1;
-  min-width: fit-content;
-  padding: 10px 14px;
-  border: none;
-  background: transparent;
-  color: var(--text2);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all .2s;
-  white-space: nowrap;
-}
-.tab:hover { color: var(--text); }
-.tab.active {
-  background: var(--accent);
-  color: #fff;
-}
-
-/* Sections */
-.section { display: none; }
-.section.active { display: block; }
-
-/* Checklist */
-.checklist-group { margin-bottom: 20px; }
-.checklist-group h3 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 16px;
-  font-weight: 400;
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 6px;
-  cursor: pointer;
-  transition: all .2s;
-}
-.check-item:hover { border-color: var(--accent); }
-.check-item.done { opacity: 0.5; }
-.check-item.done .check-label { text-decoration: line-through; }
-.check-box {
-  width: 20px; height: 20px;
-  border: 2px solid var(--border);
-  border-radius: 5px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: all .2s;
-  font-size: 12px;
-}
-.check-item.done .check-box {
-  background: var(--green);
-  border-color: var(--green);
-  color: #000;
-}
-.check-label { font-size: 13px; flex: 1; }
-.check-tag {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.tag-done { background: rgba(52,211,153,.15); color: var(--green); }
-.tag-pending { background: rgba(251,191,36,.15); color: var(--yellow); }
-.tag-urgent { background: rgba(248,113,113,.15); color: var(--red); }
-
-/* Progress bar */
-.progress-bar {
-  background: var(--surface);
-  border-radius: 8px;
-  padding: 14px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
-}
-.progress-bar .pb-top {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 8px;
-}
-.pb-label { font-size: 12px; color: var(--text2); }
-.pb-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--green); }
-.pb-track { background: var(--surface3); height: 6px; border-radius: 3px; overflow: hidden; }
-.pb-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .5s ease; }
-
-/* Day cards */
-.day-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  transition: all .2s;
-}
-.day-card:hover { border-color: var(--surface3); }
-.day-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  cursor: pointer;
-}
-.day-date {
-  background: var(--surface3);
-  border-radius: 8px;
-  padding: 6px 10px;
-  text-align: center;
-  min-width: 50px;
-}
-.day-date .dd-day { font-family: 'DM Serif Display', serif; font-size: 18px; line-height: 1; }
-.day-date .dd-month { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); }
-.day-info { flex: 1; }
-.day-info .day-title { font-size: 14px; font-weight: 600; }
-.day-info .day-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.day-phase {
-  font-size: 9px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.phase-orlando { background: rgba(96,165,250,.15); color: var(--blue); }
-.phase-miami { background: rgba(244,114,182,.15); color: var(--pink); }
-.phase-stl { background: rgba(167,139,250,.15); color: var(--purple); }
-.phase-volta { background: rgba(251,191,36,.15); color: var(--yellow); }
-
-.day-body {
-  display: none;
-  padding: 0 16px 16px;
-  border-top: 1px solid var(--border);
-}
-.day-card.open .day-body { display: block; padding-top: 12px; }
-
-.day-activity {
-  display: flex;
-  gap: 10px;
-  padding: 8px 0;
-}
-.day-activity + .day-activity { border-top: 1px solid rgba(255,255,255,.04); }
-.da-time {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--accent2);
-  min-width: 50px;
-  padding-top: 2px;
-}
-.da-content { flex: 1; }
-.da-name { font-size: 13px; font-weight: 500; }
-.da-desc { font-size: 11px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
-.da-tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-.da-tag {
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-.da-tag.park { background: rgba(96,165,250,.12); color: var(--blue); }
-.da-tag.car { background: rgba(232,93,38,.15); color: var(--accent2); }
-.da-tag.shop { background: rgba(244,114,182,.12); color: var(--pink); }
-.da-tag.rest { background: rgba(52,211,153,.12); color: var(--green); }
-.da-tag.food { background: rgba(251,191,36,.12); color: var(--yellow); }
-.da-tag.culture { background: rgba(167,139,250,.12); color: var(--purple); }
-.da-tag.free { background: rgba(52,211,153,.12); color: var(--green); }
-
-/* Tip boxes */
-.tip {
-  background: rgba(232,93,38,.06);
-  border-left: 3px solid var(--accent);
-  padding: 10px 14px;
-  border-radius: 0 8px 8px 0;
-  margin: 10px 0;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--text2);
-}
-.tip strong { color: var(--accent2); }
-
-.pregnant-tip {
-  background: rgba(244,114,182,.06);
-  border-left-color: var(--pink);
-}
-.pregnant-tip strong { color: var(--pink); }
-
-/* Tickets Section */
-.ticket-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-}
-.ticket-card h3 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 17px;
-  font-weight: 400;
-  margin-bottom: 4px;
-}
-.ticket-card .tc-sub { font-size: 11px; color: var(--text2); margin-bottom: 12px; }
-.ticket-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  font-size: 13px;
-}
-.ticket-row + .ticket-row { border-top: 1px solid rgba(255,255,255,.04); }
-.ticket-row .tr-label { color: var(--text2); }
-.ticket-row .tr-val { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
-.ticket-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0 0;
-  margin-top: 8px;
-  border-top: 1px solid var(--border);
-  font-weight: 600;
-}
-.ticket-total .tr-val { color: var(--accent); font-size: 15px; }
-.tc-link {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 11px;
-  color: var(--accent2);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(232,93,38,.3);
-  padding-bottom: 1px;
-}
-.tc-link:hover { border-color: var(--accent2); }
-
-/* Flights */
-.flight-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.flight-icon {
-  width: 36px; height: 36px;
-  background: var(--surface3);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.flight-info { flex: 1; }
-.flight-info .fi-route { font-size: 13px; font-weight: 600; }
-.flight-info .fi-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.flight-date {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--accent2);
-  text-align: right;
-}
-
-/* Section title */
-.sec-title {
-  font-family: 'DM Serif Display', serif;
-  font-size: 20px;
-  font-weight: 400;
-  margin-bottom: 16px;
-}
-.sec-subtitle {
-  font-size: 12px;
-  color: var(--text2);
-  margin-bottom: 16px;
-  line-height: 1.6;
-}
-
-/* Phase divider */
-.phase-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0 12px;
-}
-.phase-divider .pd-line { flex: 1; height: 1px; background: var(--border); }
-.phase-divider .pd-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  padding: 4px 12px;
-  border-radius: 4px;
-}
-
-/* Expand icon */
-.expand-icon {
-  color: var(--text2);
-  font-size: 12px;
-  transition: transform .2s;
-}
-.day-card.open .expand-icon { transform: rotate(180deg); }
-
-/* countdown */
-.countdown {
-  text-align: center;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(232,93,38,.08), rgba(232,93,38,.02));
-  border: 1px solid rgba(232,93,38,.15);
-  border-radius: 12px;
-  margin-bottom: 24px;
-}
-.countdown .cd-num {
-  font-family: 'DM Serif Display', serif;
-  font-size: 36px;
-  color: var(--accent);
-}
-.countdown .cd-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
-
-@media (max-width: 480px) {
-  .overview { grid-template-columns: 1fr 1fr; }
-  .tabs { gap: 2px; padding: 3px; }
-  .tab { padding: 8px 10px; font-size: 11px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA 2026 - Trip Planner</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* Reseta as margens do body para a tela preta preencher tudo */
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #0D0D0D;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
+    <div id="root"></div>
 
-<div class="header">
-  <h1>US Trip 2026</h1>
-  <div class="sub">Orlando → Miami → St. Louis &nbsp;·&nbsp; <span>09 Mai – 31 Mai</span></div>
-</div>
+    <script type="text/babel">
+// Adaptando os imports para o navegador
+const { useState, useEffect } = React;
 
-<div class="countdown">
-  <div class="cd-num" id="countdown">—</div>
-  <div class="cd-label">dias até o embarque</div>
-</div>
+const CHECKLIST_DATA = [
+  {
+    category: "Documentação",
+    items: [
+      { id: "passaportes", label: "Passaportes válidos (todos)", done: false },
+      { id: "visto", label: "Vistos americanos em dia", done: false },
+      { id: "seguro", label: "Seguro viagem (cobertura gestante)", done: false },
+      { id: "laudo_medico", label: "Laudo médico para viagem (esposa grávida)", done: false },
+      { id: "carteira_vacinacao", label: "Carteira de vacinação (filha)", done: false },
+      { id: "autorizacao", label: "Autorização de viagem (se necessário p/ menor)", done: false },
+    ],
+  },
+  {
+    category: "Transporte",
+    items: [
+      { id: "passagens", label: "Passagens aéreas compradas", done: true },
+      { id: "aluguel_carro", label: "Aluguel de carro reservado (Orlando + Miami)", done: false },
+      { id: "cadeirinha", label: "Cadeirinha de bebê no carro alugado", done: false },
+      { id: "voo_stl", label: "Voo Orlando → St. Louis (23/mai)", done: false },
+      { id: "voo_stl_volta", label: "Voo St. Louis → Orlando (30/mai)", done: false },
+      { id: "gps", label: "Chip de celular ou eSIM com dados", done: false },
+    ],
+  },
+  {
+    category: "Hospedagem",
+    items: [
+      { id: "hotel_orlando", label: "Vacation Village at Parkway (Orlando)", done: true },
+      { id: "hotel_miami", label: "Brickell Arch Residences (Palermo Home) — 21–24/mai", done: true },
+      { id: "hotel_stl", label: "Estadia em St. Louis (casa da amiga)", done: true },
+    ],
+  },
+  {
+    category: "Tickets & Ingressos",
+    items: [
+      { id: "disney_tickets", label: "Ingressos Disney (3 dias — MK×2 + AK×1)", done: false },
+      { id: "universal_tickets", label: "Ingressos Universal (2+ dias c/ Epic Universe)", done: false },
+      { id: "seaworld_tickets", label: "Ingresso SeaWorld (1 dia)", done: false },
+      { id: "winter_park_boat", label: "Scenic Boat Tour Winter Park (não precisa reservar)", done: false },
+    ],
+  },
+];
 
-<div class="overview">
-  <div class="ov-card">
-    <div class="ov-label">Duração</div>
-    <div class="ov-val">22</div>
-    <div class="ov-detail">dias</div>
-  </div>
-  <div class="ov-card">
-    <div class="ov-label">Cidades</div>
-    <div class="ov-val">3</div>
-    <div class="ov-detail">ORL · MIA · STL</div>
-  </div>
-  <div class="ov-card">
-    <div class="ov-label">Viajantes</div>
-    <div class="ov-val">3</div>
-    <div class="ov-detail">família</div>
-  </div>
-</div>
+const ITINERARY = [
+  {
+    phase: "Orlando · Fase 1",
+    phaseColor: "#FF6B35",
+    days: [
+      {
+        date: "09/mai (sáb)",
+        title: "Chegada",
+        icon: "✈️",
+        type: "travel",
+        items: [
+          "Chegada MCO 17:30",
+          "Pegar carro alugado (Wrangler)",
+          "Check-in hotel perto do MCO (1 noite)",
+          "Supermercado — compras básicas (Publix ou Walmart Supercenter na 192)",
+          "Descanso e adaptação ao fuso",
+        ],
+        tip: "Vacation Village check-in é dia 10. Primeira noite em hotel perto do aeroporto. Aproveitem para comprar água, snacks e itens de farmácia.",
+      },
+      {
+        date: "10/mai (dom)",
+        title: "SeaWorld",
+        icon: "🐬",
+        type: "park",
+        items: [
+          "Check-out hotel MCO de manhã",
+          "Check-in Vacation Village (deixar malas, pegar pulseiras)",
+          "Tarde no SeaWorld Orlando",
+          "Shows: Orca Encounter, Sea Lion, Dolphin",
+          "Sesame Street Land (perfeito p/ Olivia!)",
+          "Aquários interativos",
+        ],
+        places: [
+          { name: "Vacation Village at Parkway", address: "2949 Arabian Nights Blvd, Kissimmee, FL", from: "Hotel MCO", distance: "~18 mi", time: "~25 min" },
+          { name: "SeaWorld Orlando", address: "7007 Sea World Dr, Orlando, FL 32821", from: "Vacation Village", distance: "~10 mi", time: "~18 min" },
+        ],
+        tip: "Parque menor é a escolha certa pro primeiro dia com check-in. Olivia entra grátis (menores de 3). SeaWorld fica a ~20 min do Vacation Village.",
+      },
+      {
+        date: "11/mai (seg)",
+        title: "Magic Kingdom",
+        icon: "🏰",
+        type: "park",
+        items: [
+          "Chegar bem cedo no Magic Kingdom",
+          "Foco: Fantasyland (Dumbo, Carousel, It's a Small World — ideal para Olivia)",
+          "Almoço: Columbia Harbour House ou Pinocchio Village Haus",
+          "Tomorrowland, Adventureland, parada",
+          "Show de fogos à noite",
+        ],
+        places: [
+          { name: "Magic Kingdom — Transportation & Ticket Center", address: "1180 Seven Seas Dr, Lake Buena Vista, FL 32830", from: "Vacation Village", distance: "~6 mi", time: "~12 min" },
+        ],
+        tip: "Segundas têm movimento médio. Olivia dorme no carrinho — levem um leve e reclinável. Vacation Village fica a 10 min do MK.",
+      },
+      {
+        date: "12/mai (ter)",
+        title: "Descanso + Outlets",
+        icon: "🛍️",
+        type: "rest",
+        items: [
+          "Manhã tranquila — piscina do resort",
+          "Almoço leve",
+          "Tarde → Orlando Vineland Premium Outlets (160+ lojas)",
+          "Jantar no Disney Springs ou área dos outlets",
+        ],
+        places: [
+          { name: "Orlando Vineland Premium Outlets", address: "8200 Vineland Ave, Orlando, FL 32821", from: "Vacation Village", distance: "~5 mi", time: "~10 min" },
+          { name: "Dechoes Resale (College Park)", address: "2110 Edgewater Dr, Orlando, FL 32804", from: "Vineland Outlets", distance: "~12 mi", time: "~20 min" },
+        ],
+        tip: "Dia leve. Vineland tem Prada, Burberry, Gucci, Nike, Tommy. Olivia adora a fonte central. Dechoes para garimpo de designer autenticado. Confira Simon app para cupons extras.",
+      },
+      {
+        date: "13/mai (qua)",
+        title: "Animal Kingdom",
+        icon: "🦁",
+        type: "park",
+        items: [
+          "Dia no Animal Kingdom",
+          "Kilimanjaro Safaris (ir cedo — animais mais ativos de manhã)",
+          "Na'vi River Journey (Pandora — leve e lindo)",
+          "Festival of the Lion King",
+          "The Boneyard, Affection Section (área infantil)",
+        ],
+        places: [
+          { name: "Disney's Animal Kingdom", address: "2901 Osceola Pkwy, Bay Lake, FL 32830", from: "Vacation Village", distance: "~8 mi", time: "~15 min" },
+        ],
+        tip: "Animal Kingdom funciona melhor de manhã. Ingresso mais barato que MK.",
+      },
+      {
+        date: "14/mai (qui)",
+        title: "EPCOT — dia todo",
+        icon: "🌍",
+        type: "park",
+        items: [
+          "Chegar cedo no EPCOT",
+          "World Celebration + World Discovery (atrações)",
+          "Almoço no World Showcase — gastronomia internacional",
+          "Tarde percorrendo os pavilhões (Itália, França, Japão, Marrocos)",
+          "Show noturno: Luminous (fogos sobre o lago)",
+        ],
+        places: [
+          { name: "EPCOT", address: "200 Epcot Center Dr, Lake Buena Vista, FL 32821", from: "Vacation Village", distance: "~6 mi", time: "~12 min" },
+        ],
+        tip: "EPCOT é o parque mais adulto da Disney. Vocês vão amar arquitetura, comida e o World Showcase. Show noturno é imperdível.",
+      },
+      {
+        date: "15/mai (sex)",
+        title: "Universal Studios — Harry Potter",
+        icon: "⚡",
+        type: "park",
+        items: [
+          "Universal Studios Florida",
+          "The Wizarding World of Harry Potter — Diagon Alley",
+          "Hogwarts Express (precisa Park-to-Park!)",
+          "Islands of Adventure — Hogsmeade",
+          "Seuss Landing (ótima para Olivia)",
+        ],
+        places: [
+          { name: "Universal Studios Florida", address: "6000 Universal Blvd, Orlando, FL 32819", from: "Vacation Village", distance: "~13 mi", time: "~22 min" },
+        ],
+        tip: "Para o Hogwarts Express, precisa Park-to-Park. Vale muito.",
+      },
+      {
+        date: "16/mai (sáb)",
+        title: "Cars & Coffee + Descanso",
+        icon: "🏎️",
+        type: "rest",
+        items: [
+          "8:00–10:00 → Cars & Coffee Orlando — House Blend Cafe, Ocoee",
+          "Café da manhã na região",
+          "Volta ao resort — piscina, descanso",
+          "Tarde leve → Disney Springs ou ICON Park",
+        ],
+        places: [
+          { name: "House Blend Cafe (Cars & Coffee)", address: "10730 W Colonial Dr, Ocoee, FL 34761", from: "Vacation Village", distance: "~25 mi", time: "~35 min" },
+          { name: "Disney Springs", address: "1486 E Buena Vista Dr, Lake Buena Vista, FL 32830", from: "House Blend Cafe", distance: "~22 mi", time: "~30 min" },
+        ],
+        tip: "Cars & Coffee de manhã rápido, depois dia leve. Esposa grávida agradece.",
+      },
+      {
+        date: "17/mai (dom)",
+        title: "Dia livre — a decidir",
+        icon: "🎲",
+        type: "rest",
+        items: [
+          "Dia em aberto para decidir na hora",
+          "Opções: Kennedy Space Center (NASA, ~1h de Orlando)",
+          "Ou: Clearwater Beach / Cocoa Beach (praia)",
+          "Ou: Gatorland, ICON Park, LEGOLAND",
+          "Ou: descanso completo no resort + Disney Springs",
+        ],
+        places: [
+          { name: "Kennedy Space Center (opcional)", address: "Space Commerce Way, Merritt Island, FL 32953", from: "Vacation Village", distance: "~65 mi", time: "~1h10" },
+          { name: "Renninger's Flea Market (opcional)", address: "20651 US-441, Mount Dora, FL 32757", from: "Vacation Village", distance: "~45 mi", time: "~50 min" },
+          { name: "Clearwater Beach (opcional)", address: "Clearwater Beach, FL 33767", from: "Vacation Village", distance: "~95 mi", time: "~1h40" },
+        ],
+        tip: "Kennedy Space Center é experiência única. Renninger's é garimpo pesado (1000+ vendors). Clearwater é a praia mais bonita da Flórida. Decidam pelo cansaço da família.",
+      },
+      {
+        date: "18/mai (seg)",
+        title: "Universal Epic Universe",
+        icon: "🍄",
+        type: "park",
+        items: [
+          "Dia no Universal Epic Universe",
+          "Super Nintendo World (Mario, Luigi)",
+          "How to Train Your Dragon — Isle of Berk",
+          "Dark Universe",
+          "Harry Potter — Ministry of Magic",
+        ],
+        places: [
+          { name: "Universal Epic Universe", address: "1001 Epic Blvd, Orlando, FL 32819", from: "Vacation Village", distance: "~14 mi", time: "~22 min" },
+        ],
+        tip: "Segunda costuma ter menos fila no Epic Universe. Parque mais novo de Orlando — Super Nintendo World é family-friendly.",
+      },
+      {
+        date: "19/mai (ter)",
+        title: "Hollywood Studios",
+        icon: "🎬",
+        type: "park",
+        items: [
+          "Hollywood Studios",
+          "Star Wars: Galaxy's Edge (arquitetura imersiva)",
+          "Toy Story Land (Olivia vai amar)",
+          "Mickey & Minnie's Runaway Railway",
+          "Slinky Dog Dash",
+        ],
+        places: [
+          { name: "Disney's Hollywood Studios", address: "351 S Studio Dr, Bay Lake, FL 32830", from: "Vacation Village", distance: "~7 mi", time: "~13 min" },
+        ],
+        tip: "Galaxy's Edge é uma das experiências mais imersivas da Disney. Toy Story Land é perfeito para Olivia.",
+      },
+      {
+        date: "20/mai (qua)",
+        title: "Compras finais + prep Miami",
+        icon: "🛍️",
+        type: "shopping",
+        items: [
+          "Manhã → Mall at Millenia (Apple Store p/ trade-in iPhones!)",
+          "Última passada nos outlets se faltou algo",
+          "Tarde → arrumar malas para Miami",
+          "Jantar leve",
+        ],
+        places: [
+          { name: "Mall at Millenia (Apple Store)", address: "4200 Conroy Rd, Orlando, FL 32839", from: "Vacation Village", distance: "~14 mi", time: "~20 min" },
+        ],
+        tip: "Mall at Millenia tem Apple Store ideal para fazer o trade-in dos iPhones 14 e comprar os 17 Pro/Pro Max.",
+      },
+    ],
+  },
+  {
+    phase: "Miami",
+    phaseColor: "#00BFA6",
+    days: [
+      {
+        date: "21/mai (qui)",
+        title: "Voo p/ Miami + Porsche + Wynwood",
+        icon: "✈️",
+        type: "travel",
+        items: [
+          "Manhã: devolver Wrangler no MCO (ou estacionar)",
+          "Voo MCO → MIA (Spirit, 1h10 — só bagagem de mão)",
+          "Uber para Brickell Arch — check-in",
+          "Pegar Porsche no Turo (início dos 3 dias)",
+          "Tarde → Wynwood Walls (grafite, galerias, moda)",
+          "Museum Garage — arquitetura icônica no Design District",
+          "Jantar em Wynwood",
+        ],
+        places: [
+          { name: "Brickell Arch Residences", address: "1080 Brickell Ave, Miami, FL 33131", from: "MIA Airport (Uber)", distance: "~9 mi", time: "~20 min" },
+          { name: "Wynwood Walls", address: "2516 NW 2nd Ave, Miami, FL 33127", from: "Brickell Arch", distance: "~4 mi", time: "~12 min" },
+          { name: "Museum Garage (Design District)", address: "3400 NE 1st Ave, Miami, FL 33137", from: "Wynwood", distance: "~1 mi", time: "~5 min" },
+        ],
+        tip: "Voo economiza 3h30 de estrada. Porsche já pega no dia 21 para maximizar os 3 dias. Wynwood é perfeito para moda + arte + arquitetura.",
+      },
+      {
+        date: "22/mai (sex)",
+        title: "Art Deco + South Beach",
+        icon: "🏖️",
+        type: "culture",
+        items: [
+          "Manhã → Art Deco Walking Tour em South Beach (MDPL, ~$35)",
+          "Ocean Drive, Collins Ave",
+          "Almoço em South Beach",
+          "Lincoln Road Mall — compras + second-hand",
+          "Tarde em South Pointe Park (mais tranquilo)",
+          "Sunset em South Pointe Pier",
+        ],
+        places: [
+          { name: "Art Deco Welcome Center (MDPL)", address: "1001 Ocean Dr, Miami Beach, FL 33139", from: "Brickell Arch", distance: "~5 mi", time: "~15 min" },
+          { name: "Lincoln Road Mall", address: "Lincoln Rd, Miami Beach, FL 33139", from: "Ocean Drive", distance: "~1 mi", time: "~5 min" },
+          { name: "South Pointe Park", address: "1 Washington Ave, Miami Beach, FL 33139", from: "Lincoln Road", distance: "~2 mi", time: "~8 min" },
+        ],
+        tip: "O tour de Art Deco vale cada centavo. South Pointe é ótimo para criança. Lincoln Road às vezes sedia o Antique & Collectible Market (dealers de joias, relógios vintage, moda) — confira lincolnroad.com antes de ir.",
+      },
+      {
+        date: "23/mai (sáb)",
+        title: "Garimpo + Design District",
+        icon: "👜",
+        type: "culture",
+        items: [
+          "Manhã → Fly Boutique (Coconut Grove) — vintage designer",
+          "11:00 → The RealReal em Bal Harbour Shops (luxo autenticado)",
+          "Almoço em Bal Harbour ou Design District",
+          "Tarde → Miami Design District (arquitetura + moda luxo + supercars na rua)",
+          "Concessionárias-experiência: Braman (Porsche, Bentley), The Collection (Ferrari)",
+          "17h–21h: supercars desfilando no Design District (NE 39th St)",
+          "Jantar no Design District com vista pros carros",
+        ],
+        places: [
+          { name: "Fly Boutique (vintage designer)", address: "2933 Bird Ave, Miami, FL 33133", from: "Brickell Arch", distance: "~4 mi", time: "~12 min" },
+          { name: "The RealReal (Bal Harbour Shops)", address: "9700 Collins Ave, Bal Harbour, FL 33154", from: "Fly Boutique", distance: "~18 mi", time: "~30 min" },
+          { name: "Miami Design District", address: "140 NE 39th St, Miami, FL 33137", from: "Bal Harbour", distance: "~11 mi", time: "~20 min" },
+          { name: "Braman Motorcars (Porsche, Bentley)", address: "2060 Biscayne Blvd, Miami, FL 33137", from: "Design District", distance: "~2 mi", time: "~8 min" },
+        ],
+        tip: "C. Madeleine's fechou em 2018 (só online agora). Substituída por Fly Boutique em Coconut Grove — vintage designer menor mas curado. Sábado 17h-21h no Design District é quando supercars saem pra desfilar (Lambo, Ferrari, Porsche clássicos). Sente num café na NE 39th St e aproveite o show ao vivo.",
+      },
+      {
+        date: "24/mai (dom)",
+        title: "A1A + volta Orlando",
+        icon: "🏎️",
+        type: "travel",
+        items: [
+          "Manhã cedo → Porsche drive pela A1A (Ocean Drive, Key Biscayne, Crandon Park)",
+          "Brunch em South Beach ou Coconut Grove",
+          "Devolver Porsche no Turo",
+          "Check-out Brickell Arch",
+          "Voo MIA → MCO (Spirit, 1h10 — só bagagem de mão)",
+          "Pegar Wrangler em MCO, check-in hotel perto do aeroporto",
+        ],
+        places: [
+          { name: "Rickenbacker Causeway (A1A)", address: "Rickenbacker Causeway, Key Biscayne, FL", from: "Brickell Arch", distance: "~3 mi", time: "~8 min" },
+          { name: "MIA Airport", address: "2100 NW 42nd Ave, Miami, FL 33126", from: "Brickell Arch", distance: "~9 mi", time: "~20 min" },
+        ],
+        tip: "Última manhã com o Porsche pela A1A é inesquecível. Rickenbacker Causeway + Crandon Park tem vista de Miami skyline impressionante. Devolva Porsche e Brickell Arch com tempo folgado para o voo.",
+      },
+    ],
+  },
+  {
+    phase: "St. Louis",
+    phaseColor: "#7C4DFF",
+    days: [
+      {
+        date: "25/mai (seg)",
+        title: "Voo Orlando → St. Louis",
+        icon: "✈️",
+        type: "travel",
+        items: [
+          "Check-out hotel MCO",
+          "Voo direto MCO → STL (Southwest)",
+          "Encontrar a amiga em StL",
+          "Descanso",
+        ],
+        tip: "Southwest tem rotas diretas MCO↔STL com boas tarifas. Reserve com antecedência.",
+      },
+      {
+        date: "26/mai (ter)",
+        title: "Gateway Arch + Forest Park",
+        icon: "🌆",
+        type: "culture",
+        items: [
+          "Gateway Arch — tram até o topo",
+          "Almoço em Downtown",
+          "Forest Park — Saint Louis Art Museum (gratuito)",
+          "Saint Louis Zoo (gratuito)",
+        ],
+        tip: "Forest Park é maior que o Central Park e tem várias atrações grátis. Perfeito para o orçamento.",
+      },
+      {
+        date: "27/mai (qua)",
+        title: "City Museum + amiga",
+        icon: "🎨",
+        type: "rest",
+        items: [
+          "City Museum — labirinto interativo gigante (imperdível com criança)",
+          "Almoço com a amiga",
+          "Tarde livre — thrift stores, second-hand",
+          "Jantar com a família da amiga",
+        ],
+        tip: "City Museum é uma obra de arte viva — vão amar. Reserve a manhã inteira.",
+      },
+      {
+        date: "28/mai (qui)",
+        title: "Voo St. Louis → Orlando",
+        icon: "✈️",
+        type: "travel",
+        items: [
+          "Despedida da amiga",
+          "Voo St. Louis → Orlando",
+          "Uber do MCO ao hotel perto do aeroporto",
+          "Check-in hotel + descanso",
+        ],
+        tip: "Sem carro nestes 2 dias finais — Uber/Lyft é mais barato que alugar carro pra 48h.",
+      },
+    ],
+  },
+  {
+    phase: "Orlando · Fase 2",
+    phaseColor: "#FF6B35",
+    days: [
+      {
+        date: "29/mai (sex)",
+        title: "Último dia — livre",
+        icon: "🎁",
+        type: "rest",
+        items: [
+          "Manhã: piscina do hotel ou último outlet",
+          "Almoço tranquilo",
+          "Tarde: arrumar malas, organizar compras",
+          "Jantar de despedida (Texas Roadhouse, Cheesecake Factory)",
+        ],
+        tip: "Use o dia para descanso e organização. Pesar malas — bagagem extra é cara na hora.",
+      },
+      {
+        date: "30/mai (sáb)",
+        title: "Volta para casa",
+        icon: "🏠",
+        type: "travel",
+        items: [
+          "Uber até o MCO",
+          "13:55 → Voo MCO → Fortaleza",
+          "Conexão Fortaleza → São Paulo → Curitiba",
+        ],
+        tip: "Chegue ao MCO 3h antes — voos internacionais.",
+      },
+    ],
+  },
+];
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('checklist')">Checklist</button>
-  <button class="tab" onclick="showTab('roteiro')">Roteiro</button>
-  <button class="tab" onclick="showTab('tickets')">Tickets</button>
-  <button class="tab" onclick="showTab('voos')">Voos</button>
-</div>
+const TICKETS = [
+  {
+    park: "Disney World",
+    emoji: "🏰",
+    details: [
+      "3 dias necessários: Magic Kingdom ×2 + Animal Kingdom ×1",
+      "Filha (2a8m): GRÁTIS (menores de 3 não pagam)",
+      "Adulto: ~$450–550 p/ 3-day base ticket (maio)",
+      "Park Hopper não é necessário (vocês vão 1 parque/dia)",
+    ],
+    recommendation:
+      "Compre 3-day base ticket para 2 adultos. Sem Park Hopper — economia de ~$200/pessoa.",
+    estimatedCost: "$900–1.100 (2 adultos)",
+    buyLink: "disneyworld.disney.go.com/tickets",
+    buyTips: [
+      "Compre direto no site da Disney — preço bloqueado, sem risco de aumento",
+      "Considere o Lightning Lane Multi-Pass para Magic Kingdom (~$30/dia) — faz diferença com criança",
+      "Cheque se há promoção de verão 2026 — Disney costuma lançar em abril/maio",
+    ],
+  },
+  {
+    park: "Universal Orlando",
+    emoji: "⚡",
+    details: [
+      "2 dias: Universal Studios + Epic Universe (separados)",
+      "Filha (2a8m): PAGA (Universal cobra a partir de 3 anos, checar se 2a8m entra free)",
+      "Park-to-Park necessário para Hogwarts Express",
+      "2-day park-to-park: ~$273/adulto",
+      "Promoção 7 dias por preço de 5: ~$65/dia — analisar se vale",
+    ],
+    recommendation:
+      "2-Day Park-to-Park com Epic Universe. Se quiserem flexibilidade, o pacote 7-day ($65/dia) é surreal de bom.",
+    estimatedCost: "$550–820 (2 adultos)",
+    buyLink: "universalorlando.com/tickets",
+    buyTips: [
+      "Compre online — gate prices são mais caros",
+      "Epic Universe esgota em datas populares — compre logo!",
+      "Verifique idade mínima das atrações para a filha",
+    ],
+  },
+  {
+    park: "SeaWorld",
+    emoji: "🐬",
+    details: [
+      "1 dia é suficiente",
+      "Filha (2a8m): GRÁTIS (menores de 3 não pagam)",
+      "Adulto online: ~$66–90 (data específica)",
+      "All-Day Dining: +$30/pessoa (vale muito com criança)",
+    ],
+    recommendation:
+      "Single-day ticket online + All-Day Dining. Muito mais barato que Disney/Universal.",
+    estimatedCost: "$130–220 (2 adultos + dining)",
+    buyLink: "seaworld.com/orlando/tickets",
+    buyTips: [
+      "Compre online — economiza 20-45% vs. bilheteria",
+      "O Two-Park ticket ($80) inclui Aquatica (parque aquático) se quiserem um segundo dia",
+      "Groupon costuma ter deals bons para SeaWorld",
+    ],
+  },
+  {
+    park: "Winter Park Scenic Boat Tour",
+    emoji: "🚤",
+    details: [
+      "Tour de 1h pelos lagos e canais de Winter Park",
+      "$16/adulto, $8/criança (2-11 anos)",
+      "Não precisa reserva — ordem de chegada",
+    ],
+    recommendation: "Compre na hora. Saídas a cada hora. Relaxante e lindo.",
+    estimatedCost: "$40 (2 adultos + criança)",
+    buyLink: "scenicboattours.com",
+    buyTips: ["Chegue 15min antes do horário desejado", "Funciona 7 dias por semana, 10h–16h"],
+  },
+];
 
-<!-- ==================== CHECKLIST ==================== -->
-<div class="section active" id="sec-checklist">
+const typeColors = {
+  park: "#FF6B35",
+  car: "#E53935",
+  rest: "#00BFA6",
+  travel: "#78909C",
+  shopping: "#FFB300",
+  culture: "#7C4DFF",
+};
 
-<div class="progress-bar">
-  <div class="pb-top">
-    <span class="pb-label">Preparação da viagem</span>
-    <span class="pb-val" id="pb-pct">0%</span>
-  </div>
-  <div class="pb-track"><div class="pb-fill" id="pb-fill" style="width:0%"></div></div>
-</div>
+const typeLabels = {
+  park: "Parque",
+  car: "Carros",
+  rest: "Descanso",
+  travel: "Viagem",
+  shopping: "Compras",
+  culture: "Cultura",
+};
 
-<div class="checklist-group">
-  <h3>Documentos</h3>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c1"><div class="check-box"></div><div class="check-label">Passaportes válidos (todos)</div><span class="check-tag tag-urgent">verificar</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c2"><div class="check-box"></div><div class="check-label">Visto americano (todos)</div><span class="check-tag tag-urgent">verificar</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c3"><div class="check-box"></div><div class="check-label">Atestado médico para gestante voar</div><span class="check-tag tag-urgent">obrigatório</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c4"><div class="check-box"></div><div class="check-label">Seguro viagem (cobertura gestante)</div><span class="check-tag tag-pending">pendente</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c5"><div class="check-box"></div><div class="check-label">Carteira de vacinação (filha)</div><span class="check-tag tag-pending">pendente</span></div>
-</div>
+function TripPlanner() {
+  const [tab, setTab] = useState("dashboard");
+  const [checklist, setChecklist] = useState(CHECKLIST_DATA);
+  const [expandedDay, setExpandedDay] = useState(null);
 
-<div class="checklist-group">
-  <h3>Transporte</h3>
-  <div class="check-item done" onclick="toggleCheck(this)" data-key="c6"><div class="check-box">✓</div><div class="check-label">Passagens aéreas</div><span class="check-tag tag-done">ok</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c7"><div class="check-box"></div><div class="check-label">Aluguel de carro (Orlando + Miami)</div><span class="check-tag tag-pending">pendente</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c8"><div class="check-box"></div><div class="check-label">Car seat / cadeirinha (alugar ou levar)</div><span class="check-tag tag-pending">pendente</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c9"><div class="check-box"></div><div class="check-label">Voo Orlando → St. Louis (23/mai)</div><span class="check-tag tag-urgent">comprar</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c10"><div class="check-box"></div><div class="check-label">Voo St. Louis → Orlando (29 ou 30/mai)</div><span class="check-tag tag-urgent">comprar</span></div>
-</div>
+  const toggleCheck = (catIdx, itemIdx) => {
+    setChecklist((prev) => {
+      const next = prev.map((cat, ci) => ({
+        ...cat,
+        items: cat.items.map((item, ii) =>
+          ci === catIdx && ii === itemIdx ? { ...item, done: !item.done } : item
+        ),
+      }));
+      return next;
+    });
+  };
 
-<div class="checklist-group">
-  <h3>Hospedagem</h3>
-  <div class="check-item done" onclick="toggleCheck(this)" data-key="c11"><div class="check-box">✓</div><div class="check-label">Hotel Orlando — Vacation Village at Parkway</div><span class="check-tag tag-done">ok</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c12"><div class="check-box"></div><div class="check-label">Hotel Miami (19–22 mai)</div><span class="check-tag tag-pending">pendente</span></div>
-  <div class="check-item done" onclick="toggleCheck(this)" data-key="c13"><div class="check-box">✓</div><div class="check-label">St. Louis — casa da amiga</div><span class="check-tag tag-done">ok</span></div>
-</div>
+  const totalItems = checklist.reduce((a, c) => a + c.items.length, 0);
+  const doneItems = checklist.reduce(
+    (a, c) => a + c.items.filter((i) => i.done).length,
+    0
+  );
+  const progress = Math.round((doneItems / totalItems) * 100);
 
-<div class="checklist-group">
-  <h3>Tickets & Ingressos</h3>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c14"><div class="check-box"></div><div class="check-label">Disney World — 3 dias (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c15"><div class="check-box"></div><div class="check-label">Universal Orlando — 2 dias (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c16"><div class="check-box"></div><div class="check-label">SeaWorld — 1 dia (2 adultos)</div><span class="check-tag tag-pending">comprar</span></div>
-</div>
+  return (
+    <div
+      style={{
+        fontFamily: "'Outfit', sans-serif",
+        background: "#0D0D0D",
+        color: "#E8E4DF",
+        minHeight: "100vh",
+        padding: 0,
+        margin: 0,
+      }}
+    >
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
 
-<div class="checklist-group">
-  <h3>Itens para levar</h3>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c17"><div class="check-box"></div><div class="check-label">Carrinho de bebê (dobrável p/ parques)</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c18"><div class="check-box"></div><div class="check-label">Chip de celular USA (T-Mobile / Airalo eSIM)</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c19"><div class="check-box"></div><div class="check-label">Cartão internacional (IOF reduzido)</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c20"><div class="check-box"></div><div class="check-label">Protetor solar / chapéu (calor de maio na FL)</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c21"><div class="check-box"></div><div class="check-label">Snacks e itens de conforto para a filha</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c22"><div class="check-box"></div><div class="check-label">Capa de chuva (maio = temporada de chuvas)</div></div>
-  <div class="check-item" onclick="toggleCheck(this)" data-key="c23"><div class="check-box"></div><div class="check-label">Remedios / kit farmácia</div></div>
-</div>
+      {/* Header */}
+      <div
+        style={{
+          padding: "32px 20px 20px",
+          borderBottom: "1px solid #222",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: "42px",
+            letterSpacing: "3px",
+            lineHeight: 1,
+            color: "#fff",
+          }}
+        >
+          USA 2026
+        </div>
+        <div
+          style={{
+            fontSize: "13px",
+            color: "#888",
+            marginTop: "4px",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+          }}
+        >
+          9 mai — 31 mai · Orlando → Miami → St. Louis
+        </div>
 
-</div>
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: "0", marginTop: "20px" }}>
+          {[
+            { id: "dashboard", label: "Home" },
+            { id: "itinerary", label: "Roteiro" },
+            { id: "checklist", label: "Check" },
+            { id: "tickets", label: "Tickets" },
+            { id: "finance", label: "$$$" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                flex: 1,
+                padding: "10px 0",
+                background: tab === t.id ? "#1A1A1A" : "transparent",
+                color: tab === t.id ? "#fff" : "#666",
+                border: "none",
+                borderBottom: tab === t.id ? "2px solid #FF6B35" : "2px solid transparent",
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "13px",
+                fontWeight: tab === t.id ? 600 : 400,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-<!-- ==================== ROTEIRO ==================== -->
-<div class="section" id="sec-roteiro">
+      {/* Content */}
+      <div style={{ padding: "16px 20px 40px" }}>
+        {/* DASHBOARD TAB */}
+        {tab === "dashboard" && (() => {
+          const tripStart = new Date("2026-05-09T00:00:00");
+          const tripEnd = new Date("2026-05-30T00:00:00");
+          const today = new Date();
+          const msDay = 1000 * 60 * 60 * 24;
+          const daysToTrip = Math.ceil((tripStart - today) / msDay);
+          const totalTripDays = Math.ceil((tripEnd - tripStart) / msDay) + 1;
 
-<div class="sec-title">Roteiro dia a dia</div>
-<div class="sec-subtitle">Planejado para gestante de 6 meses e criança de 2 anos — com dias de descanso intercalados. Toque no dia para expandir.</div>
+          const catProgress = checklist.map(c => ({
+            name: c.category,
+            done: c.items.filter(i => i.done).length,
+            total: c.items.length,
+            pct: Math.round((c.items.filter(i => i.done).length / c.items.length) * 100),
+          }));
 
-<div class="tip pregnant-tip">
-  <strong>Gestante nos parques:</strong> Rider Switch disponível na Disney e Universal — Mauricio faz a atração enquanto esposa espera com a filha, e depois trocam sem enfrentar fila de novo.
-</div>
+          const savedViagem = 8000;
+          const goalViagemEst = 10710;
+          const pctViagem = Math.min(100, Math.round((savedViagem / goalViagemEst) * 100));
+          const remainingViagem = Math.max(0, goalViagemEst - savedViagem);
 
-<!-- ORLANDO -->
-<div class="phase-divider">
-  <div class="pd-line"></div>
-  <div class="pd-label phase-orlando">Orlando — 9 a 18 Mai</div>
-  <div class="pd-line"></div>
-</div>
+          const nextPark = ITINERARY[0].days.find(d => d.type === "park");
+          const parkCount = ITINERARY.flatMap(p => p.days).filter(d => d.type === "park").length;
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">09</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Chegada + Disney Springs</div><div class="day-sub">Sexta · Dia de chegada</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">16:30</div><div class="da-content"><div class="da-name">Chegada no MCO</div><div class="da-desc">Pegar carro alugado, instalar car seat, check-in no Vacation Village.</div></div></div>
-    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Disney Springs</div><div class="da-desc">Jantar + passeio leve. Bom para acostumar com o fuso. Restaurantes: The Boathouse, Morimoto Asia. Lojas Disney para a filha.</div><div class="da-tags"><span class="da-tag rest">leve</span><span class="da-tag food">jantar</span><span class="da-tag free">gratuito</span></div></div></div>
-    <div class="tip">Disney Springs é gratuito — sem ticket. Estacionamento free. Ótimo para primeiro dia cansado de viagem.</div>
-  </div>
-</div>
+          return (
+            <div>
+              <div style={{background:"linear-gradient(135deg,#FF6B35,#E53935)",borderRadius:"12px",padding:"24px",marginBottom:"16px",textAlign:"center"}}>
+                <div style={{fontSize:"10px",letterSpacing:"3px",color:"rgba(255,255,255,0.8)",textTransform:"uppercase",marginBottom:"4px"}}>Faltam</div>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"72px",letterSpacing:"2px",lineHeight:1,color:"#fff"}}>{daysToTrip > 0 ? daysToTrip : "0"}</div>
+                <div style={{fontSize:"12px",color:"rgba(255,255,255,0.9)",marginTop:"4px",letterSpacing:"1px"}}>{daysToTrip > 0 ? "DIAS PARA A VIAGEM" : "VIAGEM EM ANDAMENTO ✈️"}</div>
+                <div style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",marginTop:"8px"}}>09/mai → 30/mai · {totalTripDays} dias totais</div>
+              </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">10</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Cars & Coffee + SeaWorld</div><div class="day-sub">Sábado · Carros pela manhã, parque à tarde</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Orlando Cars & Coffee</div><div class="da-desc">Great Southern Box Company Food Hall, Packing District. Exotics, classics, muscle cars. Evento gratuito, rola de 8h–11h. Café + breakfast no food hall.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag free">gratuito</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">SeaWorld Orlando</div><div class="da-desc">Parque mais leve — ótimo para gestante e criança. Shows de golfinhos, orcas, Sesame Street Land para a filha. Ritmo tranquilo.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="tip pregnant-tip"><strong>Filha (< 3 anos):</strong> Entrada gratuita no SeaWorld! Só compram 2 ingressos.</div>
-  </div>
-</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"16px"}}>
+                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #00BFA6"}}>
+                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Meta Viagem</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#00BFA6",lineHeight:1,marginTop:"4px"}}>{pctViagem}%</div>
+                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>${savedViagem.toLocaleString()} / ${goalViagemEst.toLocaleString()}</div>
+                  <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pctViagem}%`,background:"#00BFA6"}}/>
+                  </div>
+                </div>
+                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #FFB300"}}>
+                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Falta Juntar</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#FFB300",lineHeight:1,marginTop:"4px"}}>${remainingViagem.toLocaleString()}</div>
+                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>≈ R${(remainingViagem*5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
+                  {daysToTrip > 0 && <div style={{fontSize:"10px",color:"#FFB300",marginTop:"2px"}}>~${Math.round(remainingViagem/daysToTrip)}/dia até a viagem</div>}
+                </div>
+                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #7C4DFF"}}>
+                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Checklist Total</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#7C4DFF",lineHeight:1,marginTop:"4px"}}>{progress}%</div>
+                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>{doneItems} de {totalItems} itens</div>
+                  <div style={{height:"3px",background:"#222",borderRadius:"2px",marginTop:"6px",overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${progress}%`,background:"#7C4DFF"}}/>
+                  </div>
+                </div>
+                <div style={{background:"#111",borderRadius:"10px",padding:"14px",borderLeft:"3px solid #E91E63"}}>
+                  <div style={{fontSize:"10px",letterSpacing:"1.5px",color:"#888",textTransform:"uppercase"}}>Parques</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"32px",color:"#E91E63",lineHeight:1,marginTop:"4px"}}>{parkCount}</div>
+                  <div style={{fontSize:"10px",color:"#666",marginTop:"4px"}}>dias de parque</div>
+                  <div style={{fontSize:"10px",color:"#E91E63",marginTop:"2px"}}>Disney 5 · Universal 2 · SW 1</div>
+                </div>
+              </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">11</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Magic Kingdom</div><div class="day-sub">Domingo · Dia mágico em família</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Magic Kingdom</div><div class="da-desc">Chegar cedo. Fantasyland é o coração pra criança: It's a Small World, Dumbo, Winnie the Pooh, carrousel. Fotos no castelo pela manhã (luz boa, menos gente).</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Pausa para almoço + descanso</div><div class="da-desc">Voltar ao hotel para soneca da filha. Maio é quente — o meio do dia é pesado.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
-    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Voltar ao Magic Kingdom</div><div class="da-desc">Tarde/noite mais fresca. Pirates of the Caribbean, Jungle Cruise, Haunted Mansion. Fogos de artifício à noite.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="tip"><strong>Rider Switch:</strong> Use para Space Mountain, Big Thunder, Tron. Um vai, o outro espera e entra sem fila depois.</div>
-  </div>
-</div>
+              <div style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"16px"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#fff",marginBottom:"12px"}}>PROGRESSO POR CATEGORIA</div>
+                {catProgress.map(c => (
+                  <div key={c.name} style={{marginBottom:"10px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"12px",marginBottom:"4px"}}>
+                      <span style={{color:"#ccc"}}>{c.name}</span>
+                      <span style={{color:c.pct===100?"#00BFA6":"#888",fontWeight:600}}>{c.done}/{c.total}</span>
+                    </div>
+                    <div style={{height:"4px",background:"#1a1a1a",borderRadius:"2px",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${c.pct}%`,background:c.pct===100?"#00BFA6":"#FF6B35",borderRadius:"2px",transition:"width 0.4s"}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">12</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Descanso — Winter Park</div><div class="day-sub">Segunda · Dia leve fora dos parques</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">09:30</div><div class="da-content"><div class="da-name">Winter Park — Scenic Boat Tour</div><div class="da-desc">Passeio de barco de 1h pelos lagos e mansões. US$18/adulto, crianças < 2 grátis. Leve e agradável.</div><div class="da-tags"><span class="da-tag rest">leve</span><span class="da-tag culture">passeio</span></div></div></div>
-    <div class="day-activity"><div class="da-time">11:00</div><div class="da-content"><div class="da-name">Park Avenue — Shopping + Almoço</div><div class="da-desc">Rua charmosa com boutiques, galerias, restaurantes. Bom para compras mais curadas. Almoço no Bosphorous ou Prato.</div><div class="da-tags"><span class="da-tag shop">compras</span><span class="da-tag food">almoço</span></div></div></div>
-    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Descanso / Piscina do hotel</div><div class="da-desc">Tarde livre para descansar. Vacation Village tem piscina boa.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
-  </div>
-</div>
+              <div style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"16px"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#fff",marginBottom:"12px"}}>FASES DA VIAGEM</div>
+                {ITINERARY.map(p => (
+                  <div key={p.phase} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid #1a1a1a"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      <div style={{width:"4px",height:"20px",background:p.phaseColor,borderRadius:"2px"}}/>
+                      <span style={{fontSize:"13px",color:"#ccc"}}>{p.phase}</span>
+                    </div>
+                    <span style={{fontSize:"12px",color:"#888"}}>{p.days.length} dias</span>
+                  </div>
+                ))}
+              </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">13</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Animal Kingdom — Bluey</div><div class="day-sub">Terça · Parque com foco na filha</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Animal Kingdom</div><div class="da-desc">Meet & greet da Bluey! Safári Kilimanjaro pela manhã (animais mais ativos). Tree of Life, It's Tough to be a Bug. Trilha de gorilas.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço no Flame Tree BBQ</div><div class="da-desc">Comida boa, vista linda. Bom custo-benefício dentro do parque.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
-    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Avatar Flight of Passage</div><div class="da-desc">Rider Switch — uma das melhores atrações da Disney. Pandora inteira vale a visita visual.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="tip">Animal Kingdom fecha mais cedo que os outros parques — planeje chegar cedo e aproveitar a manhã.</div>
-  </div>
-</div>
+              <div style={{background:"linear-gradient(135deg,#1a1208,#1a0a0a)",borderRadius:"10px",padding:"16px",border:"1px solid #2a1a1a"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:"#FFB300",marginBottom:"10px"}}>⚡ PRÓXIMOS PASSOS</div>
+                {checklist.flatMap(c => c.items.filter(i => !i.done).map(i => ({...i, cat: c.category}))).slice(0, 5).map((item, i) => (
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:"8px",padding:"6px 0",borderBottom:"1px solid #1a1a1a"}}>
+                    <span style={{color:"#FF6B35",fontSize:"10px"}}>●</span>
+                    <span style={{fontSize:"12px",color:"#ccc",flex:1}}>{item.label}</span>
+                    <span style={{fontSize:"9px",color:"#666",letterSpacing:"0.5px",textTransform:"uppercase"}}>{item.cat}</span>
+                  </div>
+                ))}
+                {checklist.every(c => c.items.every(i => i.done)) && (
+                  <div style={{fontSize:"13px",color:"#00BFA6",textAlign:"center",padding:"12px"}}>✅ Tudo pronto! Boa viagem!</div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">14</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Universal Studios — Harry Potter</div><div class="day-sub">Quarta · Wizarding World</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Islands of Adventure — Hogsmeade</div><div class="da-desc">Hogwarts Express, Hagrid's Motorbike (Rider Switch!), Butterbeer. Diagon Alley fica no Universal Studios — se tiver Park-to-Park, conecta via trem.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Almoço em Hogsmeade</div><div class="da-desc">Three Broomsticks. Experiência imersiva dentro do tema.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
-    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Universal Studios Florida</div><div class="da-desc">Diagon Alley + Gringotts. Áreas do E.T., Transformers, Minions para a filha.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="tip"><strong>Dica:</strong> Park-to-Park é necessário para o Hogwarts Express entre os dois parques. Vale muito.</div>
-  </div>
-</div>
+        {/* ITINERARY TAB */}
+        {tab === "itinerary" && (
+          <div>
+            {ITINERARY.map((phase) => (
+              <div key={phase.phase} style={{ marginBottom: "32px" }}>
+                <div
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: "28px",
+                    letterSpacing: "2px",
+                    color: phase.phaseColor,
+                    marginBottom: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "4px",
+                      height: "24px",
+                      background: phase.phaseColor,
+                      borderRadius: "2px",
+                    }}
+                  />
+                  {phase.phase}
+                </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">15</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Shopping — Outlets</div><div class="day-sub">Quinta · Dia de compras</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">10:00</div><div class="da-content"><div class="da-name">Orlando Vineland Premium Outlets</div><div class="da-desc">160+ lojas: Burberry, Prada, Nike, Coach, Hugo Boss, Ferragamo. Fica a 10 min do Vacation Village. Desconto de 25-65% nos preços originais.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
-    <div class="day-activity"><div class="da-time">13:00</div><div class="da-content"><div class="da-name">Almoço — Ford's Garage ou Shake Shack</div><div class="da-desc">Opções dentro do outlet. Ford's Garage tem temática automotiva — você vai curtir.</div><div class="da-tags"><span class="da-tag food">almoço</span><span class="da-tag car">carros</span></div></div></div>
-    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Orlando International Premium Outlets</div><div class="da-desc">Segundo outlet na International Drive. Mais opções: Last Call Neiman Marcus, Saks OFF 5th. Brechós e second-hands na região da I-Drive também.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
-    <div class="tip"><strong>Moda:</strong> Cadastre no app Simon+ antes de ir — acumula pontos e pega deals exclusivos.</div>
-  </div>
-</div>
+                {phase.days.map((day, di) => {
+                  const dayKey = `${phase.phase}-${di}`;
+                  const isOpen = expandedDay === dayKey;
+                  return (
+                    <div
+                      key={dayKey}
+                      style={{
+                        background: isOpen ? "#141414" : "#0D0D0D",
+                        borderLeft: `3px solid ${typeColors[day.type] || "#444"}`,
+                        marginBottom: "8px",
+                        borderRadius: "0 8px 8px 0",
+                        overflow: "hidden",
+                        transition: "background 0.2s",
+                      }}
+                    >
+                      <button
+                        onClick={() => setExpandedDay(isOpen ? null : dayKey)}
+                        style={{
+                          width: "100%",
+                          padding: "14px 16px",
+                          background: "none",
+                          border: "none",
+                          color: "#E8E4DF",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          fontFamily: "'Outfit', sans-serif",
+                          textAlign: "left",
+                        }}
+                      >
+                        <span style={{ fontSize: "22px" }}>{day.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "#888",
+                              letterSpacing: "0.5px",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {day.date}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "15px",
+                              fontWeight: 600,
+                              marginTop: "2px",
+                            }}
+                          >
+                            {day.title}
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            background: typeColors[day.type] + "22",
+                            color: typeColors[day.type],
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            fontWeight: 600,
+                            letterSpacing: "0.5px",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {typeLabels[day.type]}
+                        </span>
+                        <span
+                          style={{
+                            color: "#555",
+                            fontSize: "18px",
+                            transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          ▾
+                        </span>
+                      </button>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">16</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Cars & Coffee + Descanso</div><div class="day-sub">Sexta · Carros de manhã + dia leve</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Hagerty Cars & Coffee — Ace Cafe Orlando</div><div class="da-desc">Todo 3º sábado. Ace Cafe é referência — ambiente incrível, temática moto/car. Café da manhã no local. Vibe mais curada que o Cars & Coffee grande.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag free">gratuito</span></div></div></div>
-    <div class="day-activity"><div class="da-time">11:30</div><div class="da-content"><div class="da-name">Descanso / Piscina</div><div class="da-desc">Dia de pausa para a gestante. Piscina com a filha. Descanso antes do último bloco de parques.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
-    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Disney Springs (opcional)</div><div class="da-desc">Se sobrar energia — passeio leve para compras Disney restantes ou jantar.</div><div class="da-tags"><span class="da-tag shop">compras</span><span class="da-tag free">gratuito</span></div></div></div>
-    <div class="tip pregnant-tip"><strong>Dia pré-parque:</strong> Descanse bem — amanhã é Epic Universe, dia mais intenso.</div>
-  </div>
-</div>
+                      {isOpen && (
+                        <div style={{ padding: "0 16px 16px 50px" }}>
+                          <ul
+                            style={{
+                              margin: 0,
+                              padding: 0,
+                              listStyle: "none",
+                            }}
+                          >
+                            {day.items.map((item, ii) => (
+                              <li
+                                key={ii}
+                                style={{
+                                  padding: "6px 0",
+                                  fontSize: "14px",
+                                  color: "#ccc",
+                                  borderBottom: "1px solid #1a1a1a",
+                                  display: "flex",
+                                  alignItems: "flex-start",
+                                  gap: "8px",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    color: typeColors[day.type],
+                                    marginTop: "2px",
+                                    fontSize: "8px",
+                                  }}
+                                >
+                                  ●
+                                </span>
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                          {day.places && day.places.length > 0 && (
+                            <div style={{marginTop:"12px"}}>
+                              <div style={{fontSize:"10px",fontWeight:700,letterSpacing:"1.5px",textTransform:"uppercase",color:"#666",marginBottom:"6px"}}>Deslocamentos</div>
+                              {day.places.map((p, pi) => (
+                                <div key={pi} style={{background:"#1A1A1A",borderRadius:"6px",padding:"10px 12px",marginBottom:"6px",borderLeft:`2px solid ${typeColors[day.type]}44`}}>
+                                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"8px"}}>
+                                    <div style={{flex:1,minWidth:0}}>
+                                      <div style={{fontSize:"13px",fontWeight:600,color:"#fff"}}>{p.name}</div>
+                                      <div style={{fontSize:"11px",color:"#888",marginTop:"2px"}}>{p.address}</div>
+                                      {p.from && (
+                                        <div style={{fontSize:"10px",color:"#FFB300",marginTop:"4px",letterSpacing:"0.5px"}}>
+                                          ↳ de {p.from} · {p.distance} · {p.time}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <a
+                                      href={`https://waze.com/ul?q=${encodeURIComponent(p.address)}&navigate=yes`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        background:"#33CCFF",
+                                        color:"#000",
+                                        padding:"6px 10px",
+                                        borderRadius:"5px",
+                                        fontSize:"10px",
+                                        fontWeight:700,
+                                        letterSpacing:"0.5px",
+                                        textDecoration:"none",
+                                        whiteSpace:"nowrap",
+                                        flexShrink:0,
+                                      }}
+                                    >
+                                      ▶ WAZE
+                                    </a>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {day.tip && (
+                            <div
+                              style={{
+                                marginTop: "12px",
+                                padding: "10px 12px",
+                                background: "#1A1A1A",
+                                borderRadius: "6px",
+                                fontSize: "12px",
+                                color: "#999",
+                                lineHeight: 1.5,
+                                borderLeft: `2px solid ${typeColors[day.type]}44`,
+                              }}
+                            >
+                              <span style={{ color: "#FFB300", marginRight: "6px" }}>💡</span>
+                              {day.tip}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">17</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Universal Epic Universe — Mario</div><div class="day-sub">Sábado · O parque novo</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Epic Universe — dia inteiro</div><div class="da-desc">Super Nintendo World (Mario Kart!), How to Train Your Dragon — Isle of Berk (ótimo para a filha), Dark Universe, Ministry of Magic. Parque novo, inaugurado em 2025.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço temático</div><div class="da-desc">Toadstool Cafe no Super Nintendo World — experiência gastronômica temática.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
-    <div class="day-activity"><div class="da-time">18:00</div><div class="da-content"><div class="da-name">Celestial Park</div><div class="da-desc">Área central do Epic Universe. Stardust Racers (coaster), Constellation Carousel para a filha.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="tip"><strong>Epic Universe:</strong> Parque separado dos outros Universal — fica no South Campus. Shuttle gratuito dos hotéis Universal ou de carro (15 min).</div>
-  </div>
-</div>
+        {/* CHECKLIST TAB */}
+        {tab === "checklist" && (
+          <div>
+            <div style={{ marginBottom: "24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: "8px",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: "24px",
+                    letterSpacing: "2px",
+                    color: "#fff",
+                  }}
+                >
+                  PRÉ-VIAGEM
+                </span>
+                <span
+                  style={{
+                    fontSize: "13px",
+                    color: progress === 100 ? "#00BFA6" : "#888",
+                    fontWeight: 600,
+                  }}
+                >
+                  {doneItems}/{totalItems} · {progress}%
+                </span>
+              </div>
+              <div
+                style={{
+                  height: "3px",
+                  background: "#222",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${progress}%`,
+                    background: progress === 100
+                      ? "#00BFA6"
+                      : "linear-gradient(90deg, #FF6B35, #FFB300)",
+                    borderRadius: "2px",
+                    transition: "width 0.3s",
+                  }}
+                />
+              </div>
+            </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">18</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Magic Kingdom (segunda ida) ou Flex</div><div class="day-sub">Domingo · Último dia Orlando</div></div>
-    <div class="day-phase phase-orlando">ORL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">Magic Kingdom — revisitar favoritos</div><div class="da-desc">Segunda chance para o que ficou de fora. Ou trocar por EPCOT se preferirem algo diferente — World Showcase é lindo pra passear.</div><div class="da-tags"><span class="da-tag park">parque</span></div></div></div>
-    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Arrumar malas para Miami</div><div class="da-desc">Preparar para check-out do Vacation Village amanhã cedo.</div><div class="da-tags"><span class="da-tag rest">organizar</span></div></div></div>
-    <div class="tip">Alternativa: Se estiverem cansados de parque, façam um dia de compras finais + piscina + preparação Miami.</div>
-  </div>
-</div>
+            {checklist.map((cat, catIdx) => (
+              <div key={cat.category} style={{ marginBottom: "24px" }}>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "2px",
+                    textTransform: "uppercase",
+                    color: "#666",
+                    marginBottom: "8px",
+                    paddingLeft: "4px",
+                  }}
+                >
+                  {cat.category}
+                </div>
+                {cat.items.map((item, itemIdx) => (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleCheck(catIdx, itemIdx)}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "12px",
+                      background: item.done ? "#0f1a0f" : "#111",
+                      border: "none",
+                      borderRadius: "6px",
+                      marginBottom: "4px",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                      fontFamily: "'Outfit', sans-serif",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "4px",
+                        border: item.done ? "none" : "2px solid #444",
+                        background: item.done ? "#00BFA6" : "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {item.done && (
+                        <span style={{ color: "#000", fontSize: "13px", fontWeight: 700 }}>
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: item.done ? "#5a7a5a" : "#ccc",
+                        textDecoration: item.done ? "line-through" : "none",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
 
-<!-- MIAMI -->
-<div class="phase-divider">
-  <div class="pd-line"></div>
-  <div class="pd-label phase-miami">Miami — 19 a 22 Mai</div>
-  <div class="pd-line"></div>
-</div>
+        {/* TICKETS TAB */}
+        {tab === "tickets" && (
+          <div>
+            <div
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "24px",
+                letterSpacing: "2px",
+                color: "#fff",
+                marginBottom: "4px",
+              }}
+            >
+              INGRESSOS & TICKETS
+            </div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#888",
+                marginBottom: "24px",
+                lineHeight: 1.5,
+              }}
+            >
+              Preços pesquisados em abril/2026. Valores em USD, antes de tax (6.5%).
+              Filha com 2a8m = grátis na Disney e SeaWorld.
+            </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">19</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Orlando → Miami + Wynwood</div><div class="day-sub">Segunda · Road trip + arte urbana</div></div>
-    <div class="day-phase phase-miami">MIA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">08:00</div><div class="da-content"><div class="da-name">Check-out Orlando + Drive para Miami</div><div class="da-desc">~3h30 pela Florida Turnpike. Parada no meio para esticar as pernas (gestante precisa se movimentar).</div></div></div>
-    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Check-in hotel Miami + Almoço</div><div class="da-desc">Descanso rápido. Sugestão de região: Wynwood ou Brickell.</div></div></div>
-    <div class="day-activity"><div class="da-time">14:00</div><div class="da-content"><div class="da-name">Wynwood Walls + Wynwood Arts District</div><div class="da-desc">Murais, galerias, street art. O bairro inteiro é um museu a céu aberto. Lojas de design, moda independente.</div><div class="da-tags"><span class="da-tag culture">arte</span><span class="da-tag shop">compras</span></div></div></div>
-    <div class="day-activity"><div class="da-time">16:00</div><div class="da-content"><div class="da-name">Walt Grace Vintage</div><div class="da-desc">Café + Porsches vintage + guitarras raras. Tudo junto. Em Wynwood. Vai te enlouquecer.</div><div class="da-tags"><span class="da-tag car">carros</span><span class="da-tag culture">cultura</span></div></div></div>
-    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Jantar em Wynwood</div><div class="da-desc">KYU (Asian BBQ), Alter (fine dining), ou Coyo Taco (casual mexicano).</div><div class="da-tags"><span class="da-tag food">jantar</span></div></div></div>
-  </div>
-</div>
+            {TICKETS.map((t) => (
+              <div
+                key={t.park}
+                style={{
+                  background: "#111",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <span style={{ fontSize: "28px" }}>{t.emoji}</span>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: "22px",
+                        letterSpacing: "1px",
+                        color: "#fff",
+                      }}
+                    >
+                      {t.park}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#FF6B35",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t.estimatedCost}
+                    </div>
+                  </div>
+                </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">20</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Design District + Museus</div><div class="day-sub">Terça · Moda, arquitetura, arte</div></div>
-    <div class="day-phase phase-miami">MIA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">09:30</div><div class="da-content"><div class="da-name">Miami Design District</div><div class="da-desc">Meca da moda e do design. Louis Vuitton, Dior, Prada, Fendi — mas o melhor é a arquitetura das lojas. Cada fachada é uma obra de arte. Institute of Contemporary Art (ICA) fica ali — gratuito.</div><div class="da-tags"><span class="da-tag shop">moda</span><span class="da-tag culture">arquitetura</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:30</div><div class="da-content"><div class="da-name">Almoço — Michael's Genuine</div><div class="da-desc">Farm-to-table no Design District. Ou MC Kitchen para algo mais casual.</div><div class="da-tags"><span class="da-tag food">almoço</span></div></div></div>
-    <div class="day-activity"><div class="da-time">14:30</div><div class="da-content"><div class="da-name">Pérez Art Museum Miami (PAMM)</div><div class="da-desc">Museu de arte contemporânea à beira da baía. Arquitetura do Herzog & de Meuron. Vista incrível. Coleção forte.</div><div class="da-tags"><span class="da-tag culture">museu</span></div></div></div>
-    <div class="day-activity"><div class="da-time">17:00</div><div class="da-content"><div class="da-name">Brickell — Passeio</div><div class="da-desc">Skyline de Miami, vibe urbana. Brickell City Centre para compras ou só flanar pela região.</div><div class="da-tags"><span class="da-tag culture">urbano</span></div></div></div>
-  </div>
-</div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                  {t.details.map((d, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        padding: "5px 0",
+                        fontSize: "13px",
+                        color: "#aaa",
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <span style={{ color: "#444", marginTop: "3px", fontSize: "6px" }}>●</span>
+                      {d}
+                    </li>
+                  ))}
+                </ul>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">21</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">South Beach + Coral Gables</div><div class="day-sub">Quarta · Praia, Art Deco, arquitetura</div></div>
-    <div class="day-phase phase-miami">MIA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">South Beach — Art Deco Walk</div><div class="da-desc">Ocean Drive e Collins Ave. Arquitetura Art Deco anos 30. Café no News Cafe ou Nikki Beach. Praia para a filha brincar na areia.</div><div class="da-tags"><span class="da-tag culture">arquitetura</span><span class="da-tag rest">praia</span></div></div></div>
-    <div class="day-activity"><div class="da-time">12:00</div><div class="da-content"><div class="da-name">Lincoln Road Mall</div><div class="da-desc">Pedestrian mall a céu aberto. Compras, second-hand stores, galerias. Almoço casual.</div><div class="da-tags"><span class="da-tag shop">compras</span></div></div></div>
-    <div class="day-activity"><div class="da-time">15:00</div><div class="da-content"><div class="da-name">Coral Gables — Biltmore Hotel + Venetian Pool</div><div class="da-desc">Arquitetura Mediterranean Revival. Biltmore é monumental. Venetian Pool — piscina pública mais bonita dos EUA (checar se filha pode entrar por idade).</div><div class="da-tags"><span class="da-tag culture">arquitetura</span></div></div></div>
-    <div class="day-activity"><div class="da-time">19:00</div><div class="da-content"><div class="da-name">Jantar — Coconut Grove</div><div class="da-desc">Bairro boêmio, vibe relaxada. Restaurantes bons com outdoor seating.</div><div class="da-tags"><span class="da-tag food">jantar</span></div></div></div>
-  </div>
-</div>
+                <div
+                  style={{
+                    marginTop: "14px",
+                    padding: "12px",
+                    background: "#0a1a0a",
+                    borderRadius: "6px",
+                    borderLeft: "3px solid #00BFA6",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      letterSpacing: "1.5px",
+                      textTransform: "uppercase",
+                      color: "#00BFA6",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Recomendação
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.5 }}>
+                    {t.recommendation}
+                  </div>
+                </div>
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">22</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Compras finais + Second-hand</div><div class="day-sub">Quinta · Último dia Miami</div></div>
-    <div class="day-phase phase-miami">MIA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">09:00</div><div class="da-content"><div class="da-name">Sawgrass Mills Outlet (ou Aventura Mall)</div><div class="da-desc">Sawgrass Mills: maior outlet da Flórida, 350+ lojas. Fica em Sunrise (~40 min de Miami Beach). Alternativa: Aventura Mall — mais premium, mais perto.</div><div class="da-tags"><span class="da-tag shop">outlet</span></div></div></div>
-    <div class="day-activity"><div class="da-time">13:00</div><div class="da-content"><div class="da-name">Thrift Stores / Second-hand</div><div class="da-desc">Fly Boutique Vintage (Wynwood), C. Madeleine's (North Miami), Out of the Closet (Wilton Manors). Moda vintage curada.</div><div class="da-tags"><span class="da-tag shop">brechó</span></div></div></div>
-    <div class="day-activity"><div class="da-time">17:00</div><div class="da-content"><div class="da-name">Preparar para St. Louis</div><div class="da-desc">Arrumar malas, descansar para voo/drive amanhã.</div><div class="da-tags"><span class="da-tag rest">organizar</span></div></div></div>
-  </div>
-</div>
+                <div style={{ marginTop: "12px" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      letterSpacing: "1.5px",
+                      textTransform: "uppercase",
+                      color: "#666",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    Dicas de compra
+                  </div>
+                  {t.buyTips.map((tip, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        fontSize: "12px",
+                        color: "#888",
+                        padding: "3px 0",
+                        display: "flex",
+                        gap: "6px",
+                      }}
+                    >
+                      <span style={{ color: "#FFB300" }}>→</span>
+                      {tip}
+                    </div>
+                  ))}
+                </div>
 
-<!-- ST LOUIS -->
-<div class="phase-divider">
-  <div class="pd-line"></div>
-  <div class="pd-label phase-stl">St. Louis — 23 a 29 Mai</div>
-  <div class="pd-line"></div>
-</div>
+                <div
+                  style={{
+                    marginTop: "12px",
+                    fontSize: "11px",
+                    color: "#555",
+                  }}
+                >
+                  🔗 {t.buyLink}
+                </div>
+              </div>
+            ))}
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">23</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Miami → St. Louis</div><div class="day-sub">Sexta · Voo + chegada na casa da amiga</div></div>
-    <div class="day-phase phase-stl">STL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Voo para St. Louis</div><div class="da-desc">Definir voo e horários. Devolver carro alugado no aeroporto de Miami (ou Orlando, dependendo da logística).</div></div></div>
-    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Chegada + Instalação</div><div class="da-desc">Uma semana na casa da amiga. Ritmo mais tranquilo, sem parques.</div><div class="da-tags"><span class="da-tag rest">descanso</span></div></div></div>
-    <div class="tip">St. Louis: Gateway Arch, City Museum (playground gigante), Forest Park (zoológico gratuito!), The Loop (bairro legal). Tudo com ritmo de descanso.</div>
-  </div>
-</div>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #1a1208, #0f1a0f)",
+                borderRadius: "10px",
+                padding: "20px",
+                marginTop: "24px",
+                border: "1px solid #2a2a1a",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: "20px",
+                  letterSpacing: "1px",
+                  color: "#FFB300",
+                  marginBottom: "12px",
+                }}
+              >
+                RESUMO ESTIMADO — TICKETS
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {[
+                  { label: "Disney (3 dias, 2 adultos)", value: "$900–1.100" },
+                  { label: "Universal (2 dias, 2 adultos)", value: "$550–820" },
+                  { label: "SeaWorld (1 dia, 2 adultos + dining)", value: "$130–220" },
+                  { label: "Winter Park Boat Tour", value: "$40" },
+                ].map((row) => (
+                  <div
+                    key={row.label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "13px",
+                      padding: "4px 0",
+                      borderBottom: "1px solid #1a1a1a",
+                    }}
+                  >
+                    <span style={{ color: "#aaa" }}>{row.label}</span>
+                    <span style={{ color: "#fff", fontWeight: 600 }}>{row.value}</span>
+                  </div>
+                ))}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "16px",
+                    padding: "8px 0 0",
+                    fontWeight: 700,
+                  }}
+                >
+                  <span style={{ color: "#FFB300" }}>TOTAL ESTIMADO</span>
+                  <span style={{ color: "#FFB300" }}>$1.620–2.180</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
+                  * Valores antes de tax (6.5%). Filha grátis na Disney e SeaWorld.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">24–29</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Semana em St. Louis</div><div class="day-sub">Sáb a Qui · Com a amiga</div></div>
-    <div class="day-phase phase-stl">STL</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">—</div><div class="da-content"><div class="da-name">Programação flexível com a amiga</div><div class="da-desc">Sugestões: Gateway Arch + Tram Ride, City Museum, St. Louis Zoo (gratuito!), Forest Park, The Hill (bairro italiano), Cars & Coffee STL (verificar data). Ritmo tranquilo — gestante de 6 meses precisa descansar nessa reta final da viagem.</div><div class="da-tags"><span class="da-tag culture">passeios</span><span class="da-tag rest">tranquilo</span></div></div></div>
-  </div>
-</div>
+        {/* FINANCE TAB */}
+        {tab === "finance" && (() => {
+          const USD_BRL = 5.0;
+          const fmt = (usd) => `$${usd.toLocaleString()} · R$${(usd * USD_BRL).toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+          const sections = [
+            {
+              title: "ALIMENTAÇÃO",
+              icon: "🍔",
+              color: "#FFB300",
+              items: [
+                { label: "22 dias × $100/dia (família)", value: 2200 },
+              ],
+              note: "Média café da manhã no resort + almoço/jantar fora. Cozinhar 1-2 refeições/dia no resort reduz isso bastante.",
+            },
+            {
+              title: "ALUGUEL DE CARRO — ORLANDO (14 dias)",
+              icon: "🚙",
+              color: "#FF6B35",
+              items: [
+                { label: "Wrangler 12 dias Orlando (Turo, ~$80/dia)", value: 960, card: true },
+                { label: "Combustível estimado", value: 220 },
+                { label: "Pedágios/parking", value: 60 },
+              ],
+              note: "Wrangler em Turo Orlando: ~$72–89/dia. Devolução em Miami tem taxa one-way (~$200-400). Confirme com o host antes de fechar — alguns Turo hosts não aceitam one-way. Alternativa: locadora tradicional (Avis, Budget) que aceitam one-way mas cobram mais caro.",
+            },
+            {
+              title: "PARQUES & TICKETS",
+              icon: "🎟️",
+              color: "#7C4DFF",
+              items: [
+                { label: "Disney (3 dias, 2 adultos)", value: 1000 },
+                { label: "Universal (2 dias c/ Epic Universe)", value: 685 },
+                { label: "SeaWorld + dining", value: 175 },
+                { label: "Winter Park Boat Tour", value: 40 },
+              ],
+              note: "Filha grátis na Disney e SeaWorld (menor de 3 anos).",
+            },
+            {
+              title: "MIAMI (4 dias)",
+              icon: "🌴",
+              color: "#00BFA6",
+              items: [
+                { label: "Brickell Arch Residences (3 noites, tudo incluído)", value: 950, card: true },
+                { label: "Voos MCO↔MIA Spirit (3 pax, ida+volta, sem bagagem)", value: 300, card: true },
+                { label: "Porsche 3 dias (Turo Miami, confirmado)", value: 780 },
+                { label: "Combustível premium Porsche", value: 80 },
+                { label: "Uber ocasional em Miami", value: 120 },
+                { label: "Museus, tours, atividades", value: 200 },
+              ],
+              note: "Voar MCO↔MIA via Spirit (só bagagem de mão) sai por $50/pessoa/trecho — economia absurda vs Southwest. Porsche 3 dias garante liberdade + experiência premium (Design District sábado, A1A domingo, South Beach). Wrangler fica estacionado em Orlando durante Miami.",
+            },
+            {
+              title: "ST. LOUIS + ORLANDO FINAL",
+              icon: "🌆",
+              color: "#E53935",
+              items: [
+                { label: "Voo Orlando → St. Louis (3 pax)", value: 450 },
+                { label: "Voo St. Louis → Orlando (3 pax)", value: 450 },
+                { label: "Hotel perto MCO (9, 24, 28, 29/mai · 4 noites)", value: 560, card: true },
+                { label: "Uber MCO + locomoção 2 dias finais", value: 130 },
+                { label: "Atividades / passeios StL", value: 200 },
+                { label: "Presentes para a amiga / extras", value: 150 },
+              ],
+              note: "Hospedagem grátis em StL (casa da amiga). MIA→STL: American Airlines opera direto. STL→MCO: Southwest costuma ser mais barato.",
+            },
+            {
+              title: "RESERVA / IMPREVISTOS",
+              icon: "🛟",
+              color: "#888",
+              items: [
+                { label: "Margem de segurança (~10%)", value: 900 },
+              ],
+              note: "Sempre deixar margem para emergências, farmácia, lembrança extra.",
+            },
+            {
+              title: "GASTOS PESSOAIS & FAMÍLIA",
+              icon: "👶",
+              color: "#E91E63",
+              items: [
+                { label: "Mauricio", value: 1000 },
+                { label: "Natalia", value: 1000 },
+                { label: "Olivia (roupinhas, lembranças Disney)", value: 500 },
+                { label: "Neném (enxoval, roupinhas)", value: 500 },
+              ],
+              note: "Inclui compras pessoais, roupas de gestante, enxoval do neném (Carter's, Old Navy, Gap), lembrancinhas Disney da Olivia, cafés, lanches, gorjetas.",
+            },
+            {
+              title: "APPLE — TROCA + ACESSÓRIOS",
+              icon: "📱",
+              color: "#A0A0A0",
+              goal: "apple",
+              items: [
+                { label: "iPhone 17 Pro Max 256GB (Mauricio, c/ trade-in 14PM)", value: 769 },
+                { label: "AirPods Max 2", value: 549 },
+                { label: "AirPods Pro 3", value: 249 },
+                { label: "Tax Florida (6.5%)", value: 102 },
+              ],
+              note: "Estimativas. Valor exato do trade-in só na hora (Apple Store ou apple.com/shop/trade-in). Confirme antes — trade-in pode variar ±$50. Levar o iPhone 14 Pro Max destravado, em bom estado, com caixa se possível. Apple Store no Mall at Millenia ou Florida Mall.",
+            },
+          ];
 
-<!-- VOLTA -->
-<div class="phase-divider">
-  <div class="pd-line"></div>
-  <div class="pd-label phase-volta">Volta — 30 e 31 Mai</div>
-  <div class="pd-line"></div>
-</div>
+          const total = sections.reduce((a, s) => a + s.items.reduce((b, i) => b + i.value, 0), 0);
+          const cashTotal = sections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
+          const cardTotal = sections.reduce((a, s) => a + s.items.filter(i => i.card).reduce((b, i) => b + i.value, 0), 0);
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">30</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">St. Louis → Orlando → Brasil</div><div class="day-sub">Sábado · Dia de viagem</div></div>
-    <div class="day-phase phase-volta">VOLTA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">AM</div><div class="da-content"><div class="da-name">Voo STL → MCO</div><div class="da-desc">Chegar em Orlando a tempo para o voo G3 7625 das 12:55.</div></div></div>
-    <div class="day-activity"><div class="da-time">12:55</div><div class="da-content"><div class="da-name">Voo MCO → Fortaleza (FOR)</div><div class="da-desc">G3 7625 · Chegada 21:35. Conexão em Fortaleza.</div></div></div>
-  </div>
-</div>
+          const viagemSections = sections.filter(s => s.goal !== "apple");
+          const appleSections = sections.filter(s => s.goal === "apple");
+          const viagemCash = viagemSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
+          const appleCash = appleSections.reduce((a, s) => a + s.items.filter(i => !i.card).reduce((b, i) => b + i.value, 0), 0);
 
-<div class="day-card" onclick="toggleDay(this)">
-  <div class="day-header">
-    <div class="day-date"><div class="dd-day">31</div><div class="dd-month">Mai</div></div>
-    <div class="day-info"><div class="day-title">Fortaleza → São Paulo</div><div class="day-sub">Domingo · Último trecho</div></div>
-    <div class="day-phase phase-volta">VOLTA</div>
-    <div class="expand-icon">▼</div>
-  </div>
-  <div class="day-body">
-    <div class="day-activity"><div class="da-time">03:20</div><div class="da-content"><div class="da-name">Voo FOR → GRU</div><div class="da-desc">G3 1559 · Chegada 06:55 em Guarulhos. Fim da viagem. Bem-vindos de volta.</div></div></div>
-  </div>
-</div>
+          const bonus = null;
+          const bonusTotal = bonus ? bonus.items.reduce((a, i) => a + i.value, 0) : 0;
 
-</div>
+          return (
+            <div>
+              <div style={{fontFamily:"'Bebas Neue', sans-serif",fontSize:"24px",letterSpacing:"2px",color:"#fff",marginBottom:"4px"}}>FINANCEIRO</div>
+              <div style={{fontSize:"12px",color:"#888",marginBottom:"20px"}}>Câmbio referência: R$5,00/USD. Estimativas em USD.</div>
 
-<!-- ==================== TICKETS ==================== -->
-<div class="section" id="sec-tickets">
+              {(() => {
+                const savedViagem = 8000;
+                const savedApple = 0;
+                const goalViagem = viagemCash;
+                const goalApple = appleCash;
+                const pctViagem = Math.min(100, Math.round((savedViagem / goalViagem) * 100));
+                const pctApple = goalApple > 0 ? Math.min(100, Math.round((savedApple / goalApple) * 100)) : 0;
+                const remainingViagem = Math.max(0, goalViagem - savedViagem);
+                const remainingApple = Math.max(0, goalApple - savedApple);
 
-<div class="sec-title">Guia de compra de tickets</div>
-<div class="sec-subtitle">Estimativas baseadas em preços de abril 2026. Compre online sempre — é mais barato que no portão. Filha (< 3 anos) entra grátis em todos.</div>
+                const GoalCard = ({ title, subtitle, saved, goal, pct, remaining, color, gradient }) => (
+                  <div style={{background:gradient,borderRadius:"10px",padding:"16px",border:`1px solid ${color}33`,marginBottom:"12px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"4px"}}>
+                      <div>
+                        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"16px",letterSpacing:"1.5px",color:color}}>{title}</div>
+                        <div style={{fontSize:"10px",color:"#666",letterSpacing:"0.5px"}}>{subtitle}</div>
+                      </div>
+                      <span style={{fontSize:"13px",color:pct>=100?"#00BFA6":color,fontWeight:700}}>{pct}%</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginTop:"10px",marginBottom:"8px"}}>
+                      <div>
+                        <div style={{fontSize:"18px",fontWeight:700,color:"#fff"}}>${saved.toLocaleString()}</div>
+                        <div style={{fontSize:"10px",color:"#666"}}>de ${goal.toLocaleString()}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:"9px",color:"#888",letterSpacing:"1px",textTransform:"uppercase"}}>Faltam</div>
+                        <div style={{fontSize:"14px",fontWeight:700,color:remaining===0?"#00BFA6":"#FF6B35"}}>${remaining.toLocaleString()}</div>
+                        <div style={{fontSize:"9px",color:"#666"}}>R${(remaining*5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
+                      </div>
+                    </div>
+                    <div style={{height:"4px",background:"#1a1a1a",borderRadius:"2px",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${pct}%`,background:pct>=100?"#00BFA6":color,borderRadius:"2px",transition:"width 0.4s"}}/>
+                    </div>
+                  </div>
+                );
 
-<div class="ticket-card">
-  <h3>🏰 Disney World</h3>
-  <div class="tc-sub">3 dias · Magic Kingdom (×2) + Animal Kingdom · 2 adultos</div>
-  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">3-Day Base Ticket</span></div>
-  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$420–480</span></div>
-  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
-  <div class="ticket-row"><span class="tr-label">Park Hopper (opcional)</span><span class="tr-val">+$198–264 total</span></div>
-  <div class="ticket-total"><span>Estimativa 2 adultos (base)</span><span class="tr-val">~$840–960</span></div>
-  <div class="tip" style="margin-top:12px">
-    <strong>Dica de economia:</strong> Multi-day fica muito mais barato por dia (~$140/dia vs $170+ avulso). Compre online com antecedência — preço trava e não sobe. Se quiser trocar MK repetido por EPCOT, mesmo ticket vale pra qualquer parque (exceto Park Hopper).
-  </div>
-  <a class="tc-link" href="https://disneyworld.disney.go.com/admission/tickets/" target="_blank">Comprar no site oficial da Disney →</a>
-</div>
+                return (
+                  <div style={{marginBottom:"24px"}}>
+                    <GoalCard
+                      title="META VIAGEM"
+                      subtitle="ESSENCIAL · Alimentação, carro, hotel, parques, pessoais"
+                      saved={savedViagem}
+                      goal={goalViagem}
+                      pct={pctViagem}
+                      remaining={remainingViagem}
+                      color="#00BFA6"
+                      gradient="linear-gradient(135deg,#0a1a14,#0a0f1a)"
+                    />
+                    <GoalCard
+                      title="META APPLE"
+                      subtitle="LUXO · iPhones + AirPods (compra planejada)"
+                      saved={savedApple}
+                      goal={goalApple}
+                      pct={pctApple}
+                      remaining={remainingApple}
+                      color="#A0A0A0"
+                      gradient="linear-gradient(135deg,#151515,#0a0a14)"
+                    />
+                    <div style={{padding:"8px 10px",background:"#0a0a0a",borderRadius:"4px",fontSize:"10px",color:"#888",lineHeight:1.5}}>
+                      💡 +${cardTotal.toLocaleString()} no cartão (Wrangler + hotéis MCO + Brickell), separado das metas em cash.
+                    </div>
+                  </div>
+                );
+              })()}
 
-<div class="ticket-card">
-  <h3>🧙‍♂️ Universal Orlando</h3>
-  <div class="tc-sub">2 dias · Universal Studios + Epic Universe · 2 adultos</div>
-  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">3-Day Park-to-Park</span></div>
-  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$430–480</span></div>
-  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
-  <div class="ticket-total"><span>Estimativa 2 adultos</span><span class="tr-val">~$860–960</span></div>
-  <div class="tip" style="margin-top:12px">
-    <strong>Deal atual:</strong> Universal está oferecendo 7 dias por preço de 5 (~$65/dia) incluindo Epic Universe. Se forem ir mais dias de Universal, esse deal é insano. Park-to-Park é obrigatório para Hogwarts Express.
-  </div>
-  <a class="tc-link" href="https://www.universalorlando.com/web/en/us/tickets-packages/park-tickets" target="_blank">Comprar no site oficial da Universal →</a>
-</div>
+              {sections.map((s) => {
+                const sub = s.items.reduce((a, i) => a + i.value, 0);
+                return (
+                  <div key={s.title} style={{background:"#111",borderRadius:"10px",padding:"16px",marginBottom:"12px",borderLeft:`3px solid ${s.color}`}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                        <span style={{fontSize:"20px"}}>{s.icon}</span>
+                        <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"15px",letterSpacing:"1px",color:"#fff"}}>{s.title}</span>
+                      </div>
+                      <span style={{fontSize:"13px",fontWeight:700,color:s.color}}>${sub.toLocaleString()}</span>
+                    </div>
+                    {s.items.map((i, idx) => (
+                      <div key={idx} style={{display:"flex",justifyContent:"space-between",fontSize:"12px",color:"#aaa",padding:"3px 0",gap:"8px"}}>
+                        <span style={{flex:1}}>{i.label} {i.card && <span style={{fontSize:"9px",background:"#1a2a4a",color:"#7eb6ff",padding:"1px 6px",borderRadius:"3px",marginLeft:"4px",letterSpacing:"0.5px"}}>💳 CARTÃO</span>}</span>
+                        <span style={{color: i.card ? "#7eb6ff" : "#ccc"}}>${i.value.toLocaleString()}</span>
+                      </div>
+                    ))}
+                    <div style={{marginTop:"8px",padding:"8px 10px",background:"#0a0a0a",borderRadius:"4px",fontSize:"11px",color:"#888",lineHeight:1.5}}>💡 {s.note}</div>
+                  </div>
+                );
+              })}
 
-<div class="ticket-card">
-  <h3>🐬 SeaWorld Orlando</h3>
-  <div class="tc-sub">1 dia · 2 adultos</div>
-  <div class="ticket-row"><span class="tr-label">Tipo recomendado</span><span class="tr-val">Single-Day Online</span></div>
-  <div class="ticket-row"><span class="tr-label">Preço estimado/pessoa</span><span class="tr-val">~$66–90</span></div>
-  <div class="ticket-row"><span class="tr-label">Filha (< 3 anos)</span><span class="tr-val" style="color:var(--green)">GRÁTIS</span></div>
-  <div class="ticket-row"><span class="tr-label">All-Day Dining (opcional)</span><span class="tr-val">+$30/pessoa</span></div>
-  <div class="ticket-total"><span>Estimativa 2 adultos (base)</span><span class="tr-val">~$132–180</span></div>
-  <div class="tip" style="margin-top:12px">
-    <strong>Flash Sale:</strong> SeaWorld tem tickets a partir de ~$66 online. All-Day Dining por +$30 vale a pena — come o dia todo. Compre no site oficial ou via Undercover Tourist.
-  </div>
-  <a class="tc-link" href="https://seaworld.com/orlando/tickets/" target="_blank">Comprar no site oficial do SeaWorld →</a>
-</div>
+              <div style={{background:"linear-gradient(135deg,#1a1208,#0f0f1a)",borderRadius:"10px",padding:"20px",marginTop:"20px",border:"1px solid #2a2a1a"}}>
+                <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"22px",letterSpacing:"1px",color:"#FFB300",marginBottom:"12px"}}>TOTAL ESTIMADO</div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"6px"}}>
+                  <span style={{fontSize:"13px",color:"#aaa"}}>Cash / débito (vai contar na meta)</span>
+                  <span style={{fontSize:"20px",fontWeight:700,color:"#fff"}}>${cashTotal.toLocaleString()}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:"10px"}}>
+                  <span style={{fontSize:"13px",color:"#7eb6ff"}}>💳 No cartão (parcelado)</span>
+                  <span style={{fontSize:"20px",fontWeight:700,color:"#7eb6ff"}}>${cardTotal.toLocaleString()}</span>
+                </div>
+                <div style={{borderTop:"1px solid #333",paddingTop:"10px",display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                  <span style={{fontSize:"14px",color:"#FFB300",fontWeight:600}}>TOTAL GERAL</span>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:"24px",fontWeight:700,color:"#FFB300"}}>${total.toLocaleString()}</div>
+                    <div style={{fontSize:"12px",color:"#888"}}>≈ R${(total * 5.0).toLocaleString('pt-BR',{maximumFractionDigits:0})}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:"11px",color:"#666",marginTop:"8px"}}>Família de 3 (Olivia grátis em vários lugares) · 22 dias</div>
+              </div>
 
-<div class="ticket-card" style="border-color: rgba(232,93,38,.3);">
-  <h3>💰 Resumo Total Estimado — Tickets</h3>
-  <div class="tc-sub">Todos os parques · 2 adultos · filha grátis</div>
-  <div class="ticket-row"><span class="tr-label">Disney World (3 dias)</span><span class="tr-val">~$840–960</span></div>
-  <div class="ticket-row"><span class="tr-label">Universal (2-3 dias)</span><span class="tr-val">~$860–960</span></div>
-  <div class="ticket-row"><span class="tr-label">SeaWorld (1 dia)</span><span class="tr-val">~$132–180</span></div>
-  <div class="ticket-total"><span>Total estimado (tickets)</span><span class="tr-val">~$1,830–2,100</span></div>
-</div>
-
-<div class="tip">
-  <strong>Onde comprar com desconto:</strong> Undercover Tourist (parceiro autorizado, sem taxa), Groupon (SeaWorld especialmente), e diretamente nos sites oficiais. Evite revendedores não autorizados.
-</div>
-
-</div>
-
-<!-- ==================== VOOS ==================== -->
-<div class="section" id="sec-voos">
-
-<div class="sec-title">Voos confirmados</div>
-<div class="sec-subtitle">Todos pela GOL (G3). Conexão em Brasília na ida e Fortaleza na volta.</div>
-
-<div class="flight-card">
-  <div class="flight-icon">✈️</div>
-  <div class="flight-info">
-    <div class="fi-route">São Paulo (CGH) → Brasília (BSB)</div>
-    <div class="fi-detail">G3 1400 · 06:00 → 07:35</div>
-  </div>
-  <div class="flight-date">09/MAI</div>
-</div>
-
-<div class="flight-card">
-  <div class="flight-icon">✈️</div>
-  <div class="flight-info">
-    <div class="fi-route">Brasília (BSB) → Orlando (MCO)</div>
-    <div class="fi-detail">G3 7634 · 09:15 → 16:30</div>
-  </div>
-  <div class="flight-date">09/MAI</div>
-</div>
-
-<div style="height:20px"></div>
-
-<div class="flight-card" style="opacity:.5; border-style:dashed;">
-  <div class="flight-icon">❓</div>
-  <div class="flight-info">
-    <div class="fi-route">Orlando/Miami → St. Louis (STL)</div>
-    <div class="fi-detail">A definir · ~23/mai</div>
-  </div>
-  <div class="flight-date" style="color:var(--yellow)">PENDENTE</div>
-</div>
-
-<div class="flight-card" style="opacity:.5; border-style:dashed;">
-  <div class="flight-icon">❓</div>
-  <div class="flight-info">
-    <div class="fi-route">St. Louis (STL) → Orlando (MCO)</div>
-    <div class="fi-detail">A definir · ~29-30/mai</div>
-  </div>
-  <div class="flight-date" style="color:var(--yellow)">PENDENTE</div>
-</div>
-
-<div style="height:20px"></div>
-
-<div class="flight-card">
-  <div class="flight-icon">✈️</div>
-  <div class="flight-info">
-    <div class="fi-route">Orlando (MCO) → Fortaleza (FOR)</div>
-    <div class="fi-detail">G3 7625 · 12:55 → 21:35</div>
-  </div>
-  <div class="flight-date">30/MAI</div>
-</div>
-
-<div class="flight-card">
-  <div class="flight-icon">✈️</div>
-  <div class="flight-info">
-    <div class="fi-route">Fortaleza (FOR) → Guarulhos (GRU)</div>
-    <div class="fi-detail">G3 1559 · 03:20 → 06:55</div>
-  </div>
-  <div class="flight-date">31/MAI</div>
-</div>
-
-<div class="tip" style="margin-top:16px">
-  <strong>Atenção:</strong> Voo de volta sai de Orlando dia 30 às 12:55. Se ficarem em St. Louis até dia 29, precisam de voo STL→MCO chegando até ~10:00 do dia 30 para folga no aeroporto. Considere voltar dia 29 à noite e dormir perto do MCO.
-</div>
-
-<div class="tip pregnant-tip">
-  <strong>Gestante voando:</strong> GOL exige atestado médico para viagem aérea a partir de 28 semanas. Na época (6 meses = ~24-28 semanas), pode já ser necessário. Verifique com a companhia e com o obstetra.
-</div>
-
-</div>
-
-</div>
-
-<script>
-// Tab switching
-function showTab(tab) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sec-' + tab).classList.add('active');
-  event.target.classList.add('active');
+              {bonus && (
+                <div style={{background:"#0a0f1a",borderRadius:"10px",padding:"18px",marginTop:"16px",border:"1px dashed #444"}}>
+                  <div style={{fontSize:"10px",letterSpacing:"2px",color:"#888",marginBottom:"4px"}}>OPCIONAL</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:"18px",letterSpacing:"1px",color:"#fff",marginBottom:"10px"}}>🏎️ {bonus.title}</div>
+                  {bonus.items.map((i, idx) => (
+                    <div key={idx} style={{display:"flex",justifyContent:"space-between",fontSize:"12px",color:"#aaa",padding:"3px 0"}}>
+                      <span>{i.label}</span>
+                      <span style={{color:"#ccc"}}>${i.value.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:"15px",fontWeight:700,padding:"8px 0 0",borderTop:"1px solid #222",marginTop:"6px"}}>
+                    <span style={{color:"#FF6B35"}}>EXTRA</span>
+                    <span style={{color:"#FF6B35"}}>+${bonusTotal.toLocaleString()}</span>
+                  </div>
+                  <div style={{marginTop:"10px",fontSize:"11px",color:"#888",lineHeight:1.5}}>{bonus.note}</div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
 }
 
-// Day card toggle
-function toggleDay(card) {
-  card.classList.toggle('open');
-}
-
-// Checklist with localStorage
-function toggleCheck(item) {
-  item.classList.toggle('done');
-  const box = item.querySelector('.check-box');
-  box.textContent = item.classList.contains('done') ? '✓' : '';
-  
-  // Save state
-  const key = item.dataset.key;
-  if (key) {
-    const states = JSON.parse(localStorage.getItem('trip-checklist') || '{}');
-    states[key] = item.classList.contains('done');
-    localStorage.setItem('trip-checklist', JSON.stringify(states));
-  }
-  
-  updateProgress();
-}
-
-function loadChecklist() {
-  const states = JSON.parse(localStorage.getItem('trip-checklist') || '{}');
-  Object.keys(states).forEach(key => {
-    if (states[key]) {
-      const item = document.querySelector(`[data-key="${key}"]`);
-      if (item) {
-        item.classList.add('done');
-        item.querySelector('.check-box').textContent = '✓';
-      }
-    }
-  });
-  updateProgress();
-}
-
-function updateProgress() {
-  const total = document.querySelectorAll('.check-item').length;
-  const done = document.querySelectorAll('.check-item.done').length;
-  const pct = Math.round((done / total) * 100);
-  document.getElementById('pb-pct').textContent = pct + '%';
-  document.getElementById('pb-fill').style.width = pct + '%';
-}
-
-// Countdown
-function updateCountdown() {
-  const trip = new Date('2026-05-09T06:00:00-03:00');
-  const now = new Date();
-  const diff = Math.ceil((trip - now) / (1000 * 60 * 60 * 24));
-  document.getElementById('countdown').textContent = diff > 0 ? diff : '🎉';
-  if (diff <= 0) {
-    document.querySelector('.countdown .cd-label').textContent = 'A viagem começou!';
-  }
-}
-
-// Init
-loadChecklist();
-updateCountdown();
-setInterval(updateCountdown, 3600000);
-</script>
+// Renderiza o componente no DOM
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<TripPlanner />);
+    </script>
 </body>
 </html>
